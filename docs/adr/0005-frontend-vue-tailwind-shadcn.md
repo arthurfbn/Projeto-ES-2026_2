@@ -9,7 +9,7 @@ O nome e a identidade visual ainda não estão decididos (finalistas com estilos
 ## Decisão
 - Vue 3 + Vite + TypeScript, Vue Router, Pinia (estado de UI/sessão) e TanStack Query (dados do servidor).
 - Tailwind v4 + componentes shadcn-vue (sobre Reka UI), copiados para `apps/web/src/components/ui`.
-- Identidade da marca como **design tokens** (variáveis CSS em `apps/web/src/styles/tokens.css`: cores, fontes, raios). Trocar de marca = trocar esse arquivo.
+- Identidade da marca como **design tokens** (variáveis CSS em `apps/web/src/styles/tokens.css`: cores, fontes, raios), gerados a partir de `docs/design-system.md` (marca Shavey: marinho, latão, vermelho poste, papel; Bricolage Grotesque + Inter). Trocar de marca = trocar esse arquivo.
 - PWA agora; app nativo depois via Capacitor reaproveitando o mesmo código.
 - Sem SSR/Nuxt no MVP.
 

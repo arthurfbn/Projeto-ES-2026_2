@@ -1,4 +1,8 @@
-# Shavey
+<p align="center"><img src="docs/brand/shavey-simbolo.svg" alt="Símbolo da Shavey: maquininha de cortar inclinada" width="96"></p>
+
+<h1 align="center">shavey</h1>
+
+<p align="center"><em>Passa a máquina na fila.</em></p>
 
 > Agendamento e gestão de barbearias com transparência para quem corta cabelo. MVP desenvolvido na disciplina de Engenharia de Software (UNIFESP · ICT · 2026/2), pensado como base de um produto comercial: **site primeiro, app depois**.
 
@@ -9,6 +13,7 @@
 - [O que o MVP entrega](#o-que-o-mvp-entrega)
 - [Diferenciais](#diferenciais)
 - [Impacto social — ODS 8](#impacto-social--ods-8)
+- [Identidade visual](#identidade-visual)
 - [Stack](#stack)
 - [Arquitetura](#arquitetura)
 - [Estrutura do repositório](#estrutura-do-repositório)
@@ -51,6 +56,20 @@ A agenda online, o lembrete e o controle de comissão já são comuns no mercado
 
 ## Impacto social — ODS 8
 Alinhado à **ODS 8 — Trabalho Decente e Crescimento Econômico**, metas 8.3, 8.5 e 8.8: o sistema formaliza o vínculo barbeiro ↔ barbearia, torna a remuneração (comissões, gorjetas, preço congelado) transparente e rastreável, protege a renda contra cancelamentos tardios e evita sobrecarga e conflito de jornada. A ODS está no modelo de dados, não colada por cima. Detalhes e rastreabilidade em [`docs/ods.md`](docs/ods.md).
+
+## Identidade visual
+A marca é uma **maquininha de cortar inclinada**, como na mão do barbeiro, com as duas listras do poste de barbearia na pegada. Wordmark `shavey` em minúsculas.
+
+| Marinho | Latão | Vermelho poste | Papel |
+|---|---|---|---|
+| `#17293F` | `#C9973F` | `#B83A2B` | `#F4EDE1` |
+
+- **Tipografia:** Bricolage Grotesque 800 nos títulos, Inter 400/600 no texto.
+- **Forma:** cartões brancos sobre fundo papel, bordas `#E2D6C2`, cantos arredondados (12–28 px), sem gradientes.
+- **Voz:** direta e leve, com vocabulário de barbearia ("Máquina ligada, horário marcado"); sóbria quando o assunto é dinheiro.
+- **Acessibilidade:** latão nunca é cor de texto sobre fundo claro (contraste 2,3:1).
+
+Guia completo, tabela de contraste e tokens do Tailwind: [`docs/design-system.md`](docs/design-system.md).
 
 ## Stack
 | Camada | Tecnologia | Hospedagem |
@@ -137,6 +156,7 @@ Ideia → Grill (discovery) → CONTEXT.md + ADR → Spec → Issues em fatias v
 - [Linguagem do domínio](docs/CONTEXT.md)
 - [Decisões de arquitetura (ADRs)](docs/adr/)
 - [ODS 8 e rastreabilidade](docs/ods.md)
+- [Design system](docs/design-system.md)
 - [Plano do MVP](docs/plano-mvp.md)
 
 ## Equipe

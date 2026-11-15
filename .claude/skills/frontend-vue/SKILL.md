@@ -23,7 +23,7 @@ apps/web/src/
 - Dados do servidor → TanStack Query (cache, loading, erro, invalidação). Pinia só para estado de UI e sessão. Nunca duplicar dados do servidor no Pinia.
 - Cliente HTTP único (`lib/http.ts`) com `credentials: 'include'`; valida respostas com o schema Zod do contrato.
 - Toda tela trata três estados: carregando (skeleton), erro (mensagem + tentar de novo), vazio.
-- Estilo só com classes Tailwind ligadas aos tokens (`bg-primary`, `text-foreground`). Nunca cor hex ou fonte literal em componente.
+- Estilo só com classes Tailwind ligadas aos tokens (`bg-primary`, `text-foreground`, `font-display`). Nunca cor hex ou fonte literal em componente. Marca, contraste e voz: `docs/design-system.md` (latão nunca como cor de texto sobre fundo claro; títulos e números de painel em `font-display`; textos sobre dinheiro sem piada).
 - Mobile first (o cliente agenda pelo celular); checar em 375 px.
 - Acessibilidade: labels em inputs, foco visível, contraste AA, `<button>` de verdade.
 - Datas em `America/Sao_Paulo` com `Intl.DateTimeFormat('pt-BR')`; dinheiro com `Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })` a partir de centavos.

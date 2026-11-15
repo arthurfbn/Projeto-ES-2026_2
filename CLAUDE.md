@@ -19,6 +19,9 @@ Shavey: sistema de agendamento e gestão de barbearias. MVP de um produto comerc
 4. Entrega → skill `git-pr` (commit, PR, checagens).
 Nunca pule do pedido vago direto para código.
 
+## Marca
+Identidade visual, tokens e voz em `docs/design-system.md`. UI segue esse arquivo; nada de cores, fontes ou tom fora dele.
+
 ## Linguagem do domínio
 `docs/CONTEXT.md` é a fonte da verdade dos termos. Use o termo canônico em código, UI, testes e commits. Termo novo ou ambíguo → pare e atualize o CONTEXT.md antes.
 
