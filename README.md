@@ -75,13 +75,13 @@ Guia completo, tabela de contraste e tokens do Tailwind: [`docs/design-system.md
 | Camada | Tecnologia | Hospedagem |
 |---|---|---|
 | Web | Vue 3, Vite, TypeScript, Vue Router, Pinia, TanStack Query, Tailwind v4, shadcn-vue | Vercel (preview por PR) |
-| API | Node.js, Fastify 5, TypeScript, Zod, Prisma, pino | Railway |
-| Banco | PostgreSQL | Railway |
+| API | Node.js, Fastify 5, TypeScript, Zod, Prisma, pino | Render (free), servida pela Vercel em `/api` |
+| Banco | PostgreSQL | Neon (free) |
 | Pagamentos | Stripe Checkout (modo teste) | — |
 | Testes | Vitest, Vue Test Utils, MSW, Playwright | GitHub Actions |
 | Erros | Sentry | — |
 
-Monorepo com **pnpm workspaces**. Justificativas em [`docs/adr/`](docs/adr/).
+Monorepo com **pnpm workspaces**. Toda a infraestrutura roda em planos gratuitos ([ADR-0015](docs/adr/0015-hospedagem-gratuita.md)). Justificativas em [`docs/adr/`](docs/adr/).
 
 ## Arquitetura
 Monólito modular com **Functional Core / Imperative Shell** ([ADR-0003](docs/adr/0003-monolito-modular-functional-core.md)):
@@ -157,6 +157,7 @@ Ideia → Grill (discovery) → CONTEXT.md + ADR → Spec → Issues em fatias v
 - [Decisões de arquitetura (ADRs)](docs/adr/)
 - [ODS 8 e rastreabilidade](docs/ods.md)
 - [Design system](docs/design-system.md)
+- [Setup do ambiente](docs/setup-ambiente.md)
 - [Plano do MVP](docs/plano-mvp.md)
 
 ## Equipe

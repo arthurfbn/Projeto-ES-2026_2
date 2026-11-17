@@ -9,7 +9,7 @@ Web e API evoluem juntas e compartilham contratos. O projeto anterior (projPOO) 
 ## Decisão
 Um repositório com pnpm workspaces:
 - `apps/web` — Vue (Vercel)
-- `apps/api` — Fastify (Railway)
+- `apps/api` — Fastify (Render)
 - `packages/contracts` — schemas Zod de request/response e tipos derivados, importados pelos dois apps
 
 Sem Turborepo/Nx por enquanto.
@@ -20,4 +20,4 @@ Sem Turborepo/Nx por enquanto.
 
 ## Consequências
 - Uma mudança de contrato quebra o typecheck dos dois lados no mesmo PR (feedback rápido).
-- Vercel e Railway precisam apontar o diretório raiz/filtro do app correspondente.
+- Vercel e Render precisam apontar o diretório raiz/filtro do app correspondente.

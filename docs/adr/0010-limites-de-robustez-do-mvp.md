@@ -15,7 +15,8 @@ Três semanas de desenvolvimento (16/11 a 06/12/2026, apresentação ao vivo em 
 - Row Level Security no Postgres
 - Microsserviços, Kubernetes, GraphQL, SSR/Nuxt
 - App nativo (só PWA)
-- Ambientes de PR do Railway com banco próprio
+- Ambientes de PR da API com banco próprio
+- Qualquer serviço pago, inclusive domínio próprio (ADR-0015)
 - Multi-idioma, multi-moeda
 - Fidelidade e promoções (existiam no projPOO; voltam depois do MVP)
 - Notificações por e-mail/WhatsApp

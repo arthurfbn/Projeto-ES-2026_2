@@ -21,7 +21,7 @@ Exemplo de falha a evitar: `GET /appointments/:id` que busca pelo id sem checar 
 - Regenerar sessão no login; apagar no logout.
 - Rate limit em login e cadastro (`@fastify/rate-limit`).
 - Mensagem de login genérica ("e-mail ou senha inválidos").
-- CORS: origem explícita (domínio do front e previews da Vercel), `credentials: true`. Nunca `*`.
+- Web e API na mesma origem via proxy `/api` da Vercel (ADR-0015): sem CORS em produção. Se CORS for necessário, origem explícita e `credentials: true`. Nunca `*`.
 - Para métodos que alteram estado, checar header `Origin`.
 
 ## Entradas
@@ -29,7 +29,7 @@ Exemplo de falha a evitar: `GET /appointments/:id` que busca pelo id sem checar 
 - Nunca montar SQL por concatenação. Nunca renderizar HTML vindo do usuário (`v-html` proibido com dados do usuário).
 
 ## Segredos
-- Só em variáveis de ambiente (Railway/Vercel/GitHub Secrets). `.env` no `.gitignore`; `.env.example` sem valores reais.
+- Só em variáveis de ambiente (Render/Vercel/GitHub Secrets). `.env` no `.gitignore`; `.env.example` sem valores reais.
 - Config validada com Zod na inicialização (falha cedo se faltar variável).
 - Nunca logar: senha, hash, cookie, token, `Authorization`, payload de webhook completo. Configure `redact` no pino.
 - Chave vazou → revogar e trocar; apagar o arquivo não basta.
