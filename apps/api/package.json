@@ -9,7 +9,7 @@
     "start": "node --enable-source-maps dist/server.js",
     "typecheck": "prisma generate && tsc --noEmit",
     "test": "vitest run",
-    "test:int": "vitest run --config vitest.int.config.ts",
+    "test:int": "prisma generate && vitest run --config vitest.int.config.ts",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
