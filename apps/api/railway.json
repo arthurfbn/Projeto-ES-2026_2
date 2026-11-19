@@ -1,0 +1,14 @@
+{
+  "$schema": "https://railway.com/railway.schema.json",
+  "build": {
+    "builder": "RAILPACK",
+    "buildCommand": "pnpm install --frozen-lockfile && pnpm --filter @shavey/api build"
+  },
+  "deploy": {
+    "preDeployCommand": ["pnpm --filter @shavey/api db:deploy"],
+    "startCommand": "pnpm --filter @shavey/api start",
+    "healthcheckPath": "/health",
+    "healthcheckTimeout": 60,
+    "restartPolicyType": "ON_FAILURE"
+  }
+}

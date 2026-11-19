@@ -1,0 +1,30 @@
+{
+  "name": "shavey",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.28.0",
+  "engines": {
+    "node": ">=22.12"
+  },
+  "scripts": {
+    "dev": "pnpm --parallel --filter @shavey/api --filter @shavey/web dev",
+    "dev:api": "pnpm --filter @shavey/api dev",
+    "dev:web": "pnpm --filter @shavey/web dev",
+    "build": "pnpm -r build",
+    "lint": "eslint .",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "test:int": "pnpm --filter @shavey/api test:int",
+    "db:migrate": "pnpm --filter @shavey/api db:migrate",
+    "db:deploy": "pnpm --filter @shavey/api db:deploy"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.15.0",
+    "eslint-plugin-vue": "^10.12.1",
+    "globals": "^17.14.0",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.73.0",
+    "vue-eslint-parser": "^10.4.2"
+  }
+}

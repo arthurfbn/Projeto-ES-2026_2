@@ -1,0 +1,11 @@
+// Schema do Shavey. Regras de modelagem: skill banco-migrations e ADR-0004.
+// Modelos entram junto com as fatias que os usam (docs/CONTEXT.md é a fonte dos nomes).
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}

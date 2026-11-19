@@ -98,6 +98,15 @@ Web (Vue)  ──HTTP + cookie de sessão──▶  API (Fastify)
 ```
 - Cada módulo: `core/` (regras puras e testáveis) → `app/` (casos de uso) → `adapters/` (Prisma, Stripe) → `http/` (rotas).
 - Contratos de API (schemas Zod) compartilhados entre web e API em `packages/contracts`.
+- **Sem dependência de fornecedor** ([ADR-0017](docs/adr/0017-fronteiras-de-dependencia.md)): todo serviço externo fica atrás de uma porta, e trocar um deles é escrever um adapter e mudar configuração.
+
+| Serviço externo | Porta | Hoje | Trocar por outro exige |
+|---|---|---|---|
+| Pagamentos | `PaymentGateway` + `PaymentEventParser` | Stripe (teste) | novo adapter + variáveis |
+| Banco | repositórios por módulo | Postgres no Railway | só `DATABASE_URL` (qualquer Postgres) |
+| Erros | `ErrorReporter` | Sentry / console | novo adapter + variável |
+| API | variáveis de ambiente | Railway | novo serviço + URL no `vercel.json` |
+| Web | build estático + proxy `/api` | Vercel | qualquer host estático com rewrite |
 - Garantias críticas também no banco (ex.: constraint que impede agendamentos sobrepostos do mesmo barbeiro).
 
 ## Estrutura do repositório
@@ -116,29 +125,33 @@ docs/
   skills/              skills de desenvolvimento assistido por IA
 CLAUDE.md              regras do projeto para agentes de IA
 ```
-> `apps/` e `packages/` serão criados no scaffold (semana 1).
 
 ## Como rodar
-> Em construção — será preenchido com o scaffold.
-
-Pré-requisitos previstos: Node.js 22+, pnpm, Docker (Postgres local) e Stripe CLI.
+Pré-requisitos: Node.js 22.12+ (recomendado 24 LTS, ver `.nvmrc`), pnpm via Corepack, Docker e Stripe CLI.
 
 ```bash
+corepack enable
 pnpm install
-cp apps/api/.env.example apps/api/.env   # preencher variáveis
-docker compose up -d                     # Postgres local
-pnpm db:migrate && pnpm db:seed
-pnpm dev                                 # web + api
+cp apps/api/.env.example apps/api/.env
+docker compose up -d          # Postgres local
+pnpm db:migrate               # aplica as migrations no banco local
+pnpm dev                      # web em http://localhost:5173 e API em http://localhost:3333
 ```
+
+> **Windows:** se a API não subir com `pnpm dev` (a web abre, mas o status fica sem resposta), rode em dois terminais: `pnpm dev:api` e `pnpm dev:web`.
+
+A página inicial mostra o **status do sistema**: se aparecer "Máquina ligada: servidor e banco no ar.", web, API e banco estão conversando.
 
 | Comando | O que faz |
 |---|---|
-| `pnpm dev` | web e API em modo desenvolvimento |
-| `pnpm lint` / `pnpm typecheck` | qualidade estática |
-| `pnpm test` | testes de unidade |
-| `pnpm test:int` | testes de integração com Postgres |
-| `pnpm e2e` | testes end-to-end (Playwright) |
-| `stripe listen --forward-to localhost:3333/webhooks/stripe` | webhooks do Stripe em desenvolvimento |
+| `pnpm dev` | web e API em modo desenvolvimento (a web repassa `/api/*` para a API) |
+| `pnpm lint` | ESLint, incluindo as fronteiras de dependência (ADR-0017) |
+| `pnpm typecheck` | TypeScript em todos os pacotes |
+| `pnpm test` | testes de unidade (sem banco) |
+| `pnpm test:int` | testes de integração; precisam de `DATABASE_URL` de um banco descartável |
+| `pnpm build` | build de produção da web e da API |
+| `pnpm db:migrate` | cria/aplica migrations no banco local |
+| `stripe listen --forward-to localhost:3333/webhooks/payments/stripe` | webhooks do Stripe em desenvolvimento (a partir da semana 2) |
 
 ## Como trabalhamos
 Fluxo baseado no conteúdo da disciplina e apoiado por IA:

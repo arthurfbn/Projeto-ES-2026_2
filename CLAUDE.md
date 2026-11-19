@@ -40,6 +40,7 @@ apps/api/src/
 - Dependências apontam para dentro: `http → app → core`; `adapters` implementam ports definidos em `app`.
 - `core` recebe tempo e dados como parâmetros e retorna `Result` (`{ ok: true, value } | { ok: false, error: 'CODIGO_ERRO' }`). Erros esperados são valores, não exceções.
 - Um módulo nunca importa arquivos internos de outro; só seu `index.ts`. Nunca acesse tabelas de outro módulo diretamente.
+- **Serviço externo só por porta + adapter (ADR-0017).** SDK de fornecedor (`stripe`, `@sentry/*`, `@prisma/client`) só em `adapters/`, `shared/db/`, `shared/observability/` e na composição (`app.ts`); o lint barra o resto. Domínio e banco usam nomes neutros (`provider`, `provider_event_id`), nunca o nome do fornecedor.
 
 ## Regras de código
 - TypeScript `strict`. Sem `any` (use `unknown` + validação). Sem `// @ts-ignore`.
@@ -68,11 +69,12 @@ apps/api/src/
 - [ ] PR pequeno, revisado pelo colega (ou Ship/Show justificado)
 
 ## Comandos
-<!-- preencher quando o scaffold existir -->
-- `pnpm dev` — web + api
-- `pnpm test` / `pnpm test:int` / `pnpm e2e`
-- `pnpm db:migrate` / `pnpm db:seed`
-- `stripe listen --forward-to localhost:3333/webhooks/stripe`
+- `docker compose up -d` — Postgres local
+- `pnpm dev` — web (5173) + api (3333); a web repassa `/api/*` para a API
+- `pnpm lint && pnpm typecheck && pnpm test` — checagem antes do PR
+- `pnpm test:int` — integração (precisa de `DATABASE_URL`)
+- `pnpm db:migrate` — migrations locais (seed e e2e entram com as fatias que os usam)
+- `stripe listen --forward-to localhost:3333/webhooks/payments/stripe`
 
 ## Não faça
 - Não adicione Redis, filas, microsserviços, Kubernetes, GraphQL, SSR/Nuxt, OpenTelemetry ou RLS neste MVP (ADR-0010).

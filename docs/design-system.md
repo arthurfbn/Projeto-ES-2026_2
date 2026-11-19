@@ -121,6 +121,10 @@ Arquivo único `apps/web/src/styles/tokens.css` (Tailwind v4 + shadcn-vue). Comp
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-navy: var(--shavey-navy);
+  --color-brass: var(--shavey-brass);
+  --color-pole-red: var(--shavey-pole-red);
+  --color-paper: var(--shavey-paper);
   --font-sans: 'Inter', system-ui, sans-serif;
   --font-display: 'Bricolage Grotesque', 'Inter', sans-serif;
   --radius-sm: 8px;
