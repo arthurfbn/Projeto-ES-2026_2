@@ -1,0 +1,68 @@
+/* Tokens da marca Shavey — gerados de docs/design-system.md. Único lugar com cores e fontes. */
+
+:root {
+  /* marca */
+  --shavey-navy: #17293F;
+  --shavey-brass: #C9973F;
+  --shavey-brass-light: #D9B26A;
+  --shavey-brass-dark: #B8862F;
+  --shavey-pole-red: #B83A2B;
+  --shavey-paper: #F4EDE1;
+  --shavey-line: #E2D6C2;
+  --shavey-ink-muted: #4D5C6E;
+
+  /* papéis semânticos (shadcn-vue) */
+  --background: var(--shavey-paper);
+  --foreground: var(--shavey-navy);
+  --card: #FFFFFF;
+  --card-foreground: var(--shavey-navy);
+  --popover: #FFFFFF;
+  --popover-foreground: var(--shavey-navy);
+  --primary: var(--shavey-navy);
+  --primary-foreground: var(--shavey-paper);
+  --secondary: #FFFFFF;
+  --secondary-foreground: var(--shavey-navy);
+  --accent: var(--shavey-brass);
+  --accent-foreground: var(--shavey-navy);
+  --muted: #EDE3D3;
+  --muted-foreground: var(--shavey-ink-muted);
+  --destructive: var(--shavey-pole-red);
+  --destructive-foreground: #FFFFFF;
+  --border: var(--shavey-line);
+  --input: var(--shavey-line);
+  --ring: var(--shavey-brass);
+  --radius: 12px;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-navy: var(--shavey-navy);
+  --color-brass: var(--shavey-brass);
+  --color-pole-red: var(--shavey-pole-red);
+  --color-paper: var(--shavey-paper);
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-display: 'Bricolage Grotesque', 'Inter', sans-serif;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 28px;
+}
