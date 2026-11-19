@@ -57,7 +57,12 @@ gh label create infra --color D4C5F9
 1. Bruno entra em railway.com com o GitHub dele e anota **a data de início do trial** e o crédito restante (**Account → Usage**).
 2. **New Project → Database → PostgreSQL**. Renomeie o projeto para `shavey`.
 3. Convide o Arthur em **Project Settings → Members**, se o plano permitir.
-4. O serviço da API é criado depois do scaffold: **New → GitHub Repo → Projeto-ES-2026_2** (o Bruno precisa autorizar o Railway a ver o repositório do arthurfbn). Em **Variables**, `DATABASE_URL = ${{Postgres.DATABASE_URL}}` e as demais da seção 9. Em **Settings → Networking → Generate Domain** sai a URL `*.up.railway.app`.
+4. O serviço da API é criado depois do scaffold:
+   - **New → GitHub Repo → Projeto-ES-2026_2** (o Bruno precisa autorizar o Railway a ver o repositório do arthurfbn);
+   - **Settings → Source → Root Directory**: deixe a raiz do repositório (o monorepo precisa do workspace inteiro);
+   - **Settings → Config-as-code → Railway Config File**: `/apps/api/railway.json` (build, migrations no pre-deploy, start e healthcheck `/health`);
+   - **Variables**: `DATABASE_URL = ${{Postgres.DATABASE_URL}}`, `NODE_ENV = production` e as demais da seção 9;
+   - **Settings → Networking → Generate Domain**: sai a URL `*.up.railway.app`. Cole essa URL em `apps/web/vercel.json`, no lugar de `TROCAR-PELA-URL-DA-API`, e faça um PR.
 5. Toda semana, confira **Usage**. Se o trial for acabar antes de 07/12, aplique o plano B.
 
 ## 4. Plano B: Neon + Render (só se o trial do Railway acabar)
@@ -71,7 +76,7 @@ gh label create infra --color D4C5F9
 
 1. Crie a conta em vercel.com → **Continue with GitHub** (conta arthurfbn), plano **Hobby**.
 2. Ao pedir acesso ao GitHub, escolha **Only select repositories → Projeto-ES-2026_2**.
-3. O projeto é importado no scaffold, quando existir `apps/web`: **Add New → Project → Projeto-ES-2026_2**, **Root Directory** = `apps/web`, framework **Vite**. Em **Settings → Domains**, ajuste o subdomínio gratuito para algo como `shavey.vercel.app` (se estiver livre).
+3. O projeto é importado no scaffold, quando existir `apps/web`: **Add New → Project → Projeto-ES-2026_2**, **Root Directory** = `apps/web`, framework **Vite** (a Vercel detecta o pnpm e o workspace; deixe ligada a opção de incluir arquivos fora da pasta raiz). Em **Settings → Domains**, ajuste o subdomínio gratuito para algo como `shavey.vercel.app` (se estiver livre).
 4. O `apps/web/vercel.json` (criado no scaffold) faz o proxy `/api/*` → URL da API no Railway. É isso que mantém o cookie de sessão funcionando sem domínio próprio.
 5. Se commits do Bruno forem barrados ("commit author não tem acesso"), siga o plano B do ADR-0009 (deploy via GitHub Actions com `VERCEL_TOKEN`).
 
@@ -81,7 +86,7 @@ gh label create infra --color D4C5F9
 2. **Developers → API keys** (modo teste): anote `pk_test_...` e `sk_test_...`.
 3. **Settings → Branding**: nome "Shavey", cor primária `#17293F`, destaque `#C9973F`, ícone exportado de `docs/brand/shavey-simbolo-negativo.svg` como PNG.
 4. Convide o Bruno em **Settings → Team** (papel Developer).
-5. O webhook (`https://<api>.up.railway.app/webhooks/stripe`) é criado na semana 2.
+5. O webhook (`https://<api>.up.railway.app/webhooks/payments/stripe`) é criado na semana 2.
 
 ## 6. Sentry (erros) [A ou B]
 
