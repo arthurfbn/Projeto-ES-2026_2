@@ -1,6 +1,6 @@
 # 0004 — PostgreSQL no Railway com Prisma
 
-- **Status:** aceito; hospedagem substituída pelo ADR-0015 (Neon no lugar do Railway). Regras de modelagem e migrations continuam valendo.
+- **Status:** aceito; hospedagem revista nos ADRs 0015 e 0016 (Railway Postgres na conta do Bruno; Neon como plano B). Regras de modelagem e migrations continuam valendo.
 - **Data:** 2026-11-15
 
 ## Contexto

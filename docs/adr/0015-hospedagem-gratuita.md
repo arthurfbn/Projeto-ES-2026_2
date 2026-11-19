@@ -1,6 +1,6 @@
 # 0015 — Hospedagem 100% gratuita (Vercel + Render + Neon), sem domínio próprio
 
-- **Status:** aceito — substitui a parte de hospedagem dos ADRs 0004, 0006 e 0009
+- **Status:** aceito — substitui a parte de hospedagem dos ADRs 0004, 0006 e 0009. **API e banco substituídos pelo ADR-0016** (Railway na conta do Bruno); Render + Neon passam a ser o plano B.
 - **Data:** 2026-11-16
 
 ## Contexto

@@ -29,7 +29,7 @@ Exemplo de falha a evitar: `GET /appointments/:id` que busca pelo id sem checar 
 - Nunca montar SQL por concatenação. Nunca renderizar HTML vindo do usuário (`v-html` proibido com dados do usuário).
 
 ## Segredos
-- Só em variáveis de ambiente (Render/Vercel/GitHub Secrets). `.env` no `.gitignore`; `.env.example` sem valores reais.
+- Só em variáveis de ambiente (Railway/Vercel/GitHub Secrets). `.env` no `.gitignore`; `.env.example` sem valores reais.
 - Config validada com Zod na inicialização (falha cedo se faltar variável).
 - Nunca logar: senha, hash, cookie, token, `Authorization`, payload de webhook completo. Configure `redact` no pino.
 - Chave vazou → revogar e trocar; apagar o arquivo não basta.

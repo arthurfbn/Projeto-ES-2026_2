@@ -15,7 +15,7 @@
 - **Incremento 1:** documentação no repositório (README, CLAUDE.md, ADRs, CONTEXT, ODS, skills, template de PR).
 - Revisão das regras com o Bruno (CONTEXT.md e ADRs 0011–0014) e grill pontual se surgir ambiguidade na implementação.
 - Scaffold do monorepo (pnpm, web, api, contracts), lint/typecheck/Vitest, CI no GitHub Actions, proteção da `main`.
-- Infra gratuita (ADR-0015): Neon (Postgres), Render (API), Vercel (web) com preview por PR e proxy `/api`, Sentry.
+- Infra gratuita (ADR-0015/0016): Railway na conta do Bruno (API + Postgres), Vercel (web) com preview por PR e proxy `/api`, Sentry.
 - Schema completo (Prisma + constraints) e seed.
 - Fatias: cadastro/login com sessão; `/me` com perfis e troca de visão; gerente cria barbearia, serviços (preço e duração padrão), adiciona gerentes e cria vínculos de barbeiros com preço/duração por barbeiro; barbeiro define disponibilidade.
 - **Demo da semana:** gerente monta uma barbearia em produção.

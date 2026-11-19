@@ -7,8 +7,8 @@ Shavey: sistema de agendamento e gestão de barbearias. MVP de um produto comerc
 ## Stack (ver docs/adr/)
 - Monorepo **pnpm workspaces**: `apps/web` (Vue), `apps/api` (Fastify), `packages/contracts` (schemas Zod compartilhados).
 - **Web:** Vue 3 + Vite + TypeScript, Pinia, Vue Router, TanStack Query, Tailwind v4 + shadcn-vue (Reka UI). Deploy na Vercel.
-- **API:** Node + Fastify 5 + TypeScript, Zod, Prisma, pino. Deploy no Render (free), atrás do proxy `/api` da Vercel (ADR-0015).
-- **Banco:** PostgreSQL no Neon (free), via Prisma (SQL manual quando o Prisma não expressa).
+- **API:** Node + Fastify 5 + TypeScript, Zod, Prisma, pino. Deploy no Railway (trial, conta do Bruno), atrás do proxy `/api` da Vercel (ADR-0015, ADR-0016).
+- **Banco:** PostgreSQL no Railway, via Prisma (SQL manual quando o Prisma não expressa). Plano B: Neon + Render (ADR-0016).
 - **Custo zero:** tudo em planos gratuitos, sem domínio próprio (ADR-0015). Não proponha serviço pago.
 - **Pagamento:** Stripe Checkout em modo teste.
 - **Testes:** Vitest (tudo), Vue Test Utils + MSW (web), Postgres real em CI (integração), Playwright (poucos E2E).
@@ -51,7 +51,7 @@ apps/api/src/
 ## Segurança (resumo — skill `seguranca-authz`)
 - Toda operação de negócio é escopada por `barbershopId` e verifica o vínculo do usuário com a barbearia.
 - Sessão por cookie httpOnly; nunca token em localStorage.
-- Segredos só em variáveis de ambiente (Vercel/Render/Neon). Nunca commitar `.env`. Nunca logar senha, token, cookie ou payload de cartão.
+- Segredos só em variáveis de ambiente (Vercel/Railway). Nunca commitar `.env`. Nunca logar senha, token, cookie ou payload de cartão.
 
 ## Testes (resumo — skill `tdd-core`)
 - Teste comportamento, não implementação. Core: testes de unidade puros, escritos antes (RED → GREEN → REFACTOR).

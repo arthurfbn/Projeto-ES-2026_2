@@ -3,9 +3,9 @@ name: banco-migrations
 description: Use ao criar ou alterar tabelas, colunas, índices, constraints, seeds ou queries Prisma — regras de modelagem Postgres, migrations expand/contract e SQL manual no Prisma.
 ---
 
-# Banco: Postgres (Neon) + Prisma
+# Banco: Postgres (Railway) + Prisma
 
-> Neon free: use a URL **pooled** em `DATABASE_URL` (app) e a **direta** em `DIRECT_URL` (migrations, `directUrl` no Prisma).
+> Produção: Railway Postgres (ADR-0016). Plano B: Neon, com URL **pooled** em `DATABASE_URL` e **direta** em `DIRECT_URL`.
 
 ## Modelagem
 - PK `uuid` com `gen_random_uuid()`. Toda tabela de negócio tem `barbershop_id` (exceto `users` e `sessions`).
