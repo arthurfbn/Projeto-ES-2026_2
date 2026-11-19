@@ -11,6 +11,7 @@
     "dev:api": "pnpm --filter @shavey/api dev",
     "dev:web": "pnpm --filter @shavey/web dev",
     "build": "pnpm -r build",
+    "start": "pnpm --filter @shavey/api start",
     "lint": "eslint .",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",
