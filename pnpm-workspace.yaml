@@ -7,3 +7,10 @@ onlyBuiltDependencies:
   - prisma
   - esbuild
   - vue-demi
+
+# Correções de segurança em dependências indiretas (alertas do Dependabot).
+# Remover quando prisma e @vue/test-utils trouxerem as versões corrigidas.
+overrides:
+  'effect@<3.22.1': ^3.22.1
+  'glob@>=9.0.0 <14.0.2': ^14.0.2
+  'minimatch@>=7.0.0 <11.0.1': ^11.0.1
