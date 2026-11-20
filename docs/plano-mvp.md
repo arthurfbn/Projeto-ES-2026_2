@@ -5,9 +5,9 @@
 
 ## Prioridades (MoSCoW)
 - **Must:** contas e perfis, barbearia/serviços/vínculos/disponibilidade, horários livres, agendamento sem conflito, agenda do barbeiro, pagamento online e no local, cancelamento com política, comissões (3 tipos), painel do barbeiro, painel do gerente por barbearia, deploy com CI.
-- **Should:** cobrança em aberto com restrição global, bloqueio manual por barbeiro/gerente, avaliações, painel geral do gerente (todas as barbearias).
-- **Could:** contestação de pagamento presencial, filtro dos painéis por cliente, PWA instalável.
-- **Won't (agora):** fidelidade/promoções, notificações, app nativo (ADR-0010).
+- **Should:** cobrança em aberto com restrição global, bloqueio manual por barbeiro/gerente, avaliações, painel geral do gerente (todas as barbearias), diária por convite, fechamento de agenda, remarcação (ADR-0019).
+- **Could:** contestação de pagamento presencial, filtro dos painéis por cliente, PWA instalável, busca de barbeiros para diária com avaliações.
+- **Won't (agora):** fidelidade/promoções, notificações por e-mail/push (avisos só dentro do sistema), app nativo (ADR-0010).
 
 **Linha de corte:** se ao fim da semana 2 os Must da semana 2 não estiverem em produção, os Could saem e os Should são revistos.
 
@@ -29,7 +29,9 @@
 - **Demo da semana:** agendar, pagar e concluir um atendimento.
 
 ## Semana 3 (30/11–06/12) — Proteção da renda, painel e qualidade
-- Cancelamento com política (core + reembolso parcial Stripe).
+- Cancelamento com política (core + reembolso parcial Stripe), com aviso aos gerentes da barbearia.
+- Fechamento de agenda (cancela em massa com reembolso integral) e remarcação (cliente até 1h antes; barbeiro propõe, cliente confirma).
+- Diária por convite (período + regra de comissão; tela de conflitos no aceite).
 - Cobrança em aberto + restrição global de agendamento (cai na quitação); bloqueio manual por barbeiro/gerente (persiste até desbloqueio, com indicação de quitação).
 - Avaliações.
 - Painel do barbeiro: faturamento gerado, comissão, gorjetas, margem, ticket médio, média de avaliações, serviços mais bem avaliados; filtros por período e barbearia (cliente se der tempo).
