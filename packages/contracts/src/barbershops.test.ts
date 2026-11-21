@@ -14,6 +14,11 @@ const valid = {
   alsoBarber: true,
 }
 
+/** Cópia do pedido válido sem um dos campos. */
+function without(field: keyof typeof valid) {
+  return Object.fromEntries(Object.entries(valid).filter(([key]) => key !== field))
+}
+
 function errorsOf(input: Record<string, unknown>) {
   const result = createBarbershopRequestSchema.safeParse(input)
   return result.success ? {} : fieldErrors(result.error)
@@ -27,14 +32,12 @@ describe('createBarbershopRequestSchema (R7)', () => {
 
   it('complemento vazio vira ausente (é opcional)', () => {
     expect(createBarbershopRequestSchema.parse(valid).complement).toBeUndefined()
-    const { complement: _omitido, ...semComplemento } = valid
-    expect(createBarbershopRequestSchema.parse(semComplemento).complement).toBeUndefined()
+    expect(createBarbershopRequestSchema.parse(without('complement')).complement).toBeUndefined()
     expect(createBarbershopRequestSchema.parse({ ...valid, complement: ' Sala 3 ' }).complement).toBe('Sala 3')
   })
 
   it('"eu também atendo" é desmarcado quando não vem', () => {
-    const { alsoBarber: _omitido, ...semMarcar } = valid
-    expect(createBarbershopRequestSchema.parse(semMarcar).alsoBarber).toBe(false)
+    expect(createBarbershopRequestSchema.parse(without('alsoBarber')).alsoBarber).toBe(false)
   })
 
   it.each([
