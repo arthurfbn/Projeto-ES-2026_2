@@ -56,13 +56,13 @@ const logout = useLogout()
     >
       <RouterLink
         :to="{ name: 'signup' }"
-        class="flex h-11 items-center justify-center rounded-md bg-primary px-4 font-display font-extrabold text-primary-foreground"
+        class="flex h-13 flex-1 items-center justify-center rounded-md bg-primary px-4 font-display text-lg font-extrabold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
       >
         Criar conta
       </RouterLink>
       <RouterLink
         :to="{ name: 'login' }"
-        class="flex h-11 items-center justify-center rounded-md border px-4 font-semibold"
+        class="flex h-13 flex-1 items-center justify-center rounded-md border border-input px-4 font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
       >
         Entrar
       </RouterLink>

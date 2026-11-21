@@ -29,9 +29,40 @@
   --destructive: var(--shavey-pole-red);
   --destructive-foreground: #FFFFFF;
   --border: var(--shavey-line);
-  --input: var(--shavey-line);
+  /* Contorno de campo com 3:1 sobre branco (WCAG 1.4.11); derivado da borda da marca. */
+  --input: #958468;
   --ring: var(--shavey-brass);
   --radius: 12px;
+  /* "y" do wordmark: vermelho poste sobre fundo claro, latão sobre marinho. */
+  --wordmark-accent: var(--shavey-pole-red);
+}
+
+/*
+ * Tema escuro (docs/design-system.md, "Tema escuro"): fundo marinho, texto papel, ação em latão.
+ * Tons derivados (cartão, bordas, texto secundário, erro) foram escolhidos por contraste AA.
+ */
+.dark {
+  --background: var(--shavey-navy);
+  --foreground: var(--shavey-paper);
+  --card: #1F344D;
+  --card-foreground: var(--shavey-paper);
+  --popover: #1F344D;
+  --popover-foreground: var(--shavey-paper);
+  --primary: var(--shavey-brass);
+  --primary-foreground: var(--shavey-navy);
+  --secondary: #1F344D;
+  --secondary-foreground: var(--shavey-paper);
+  --accent: var(--shavey-brass);
+  --accent-foreground: var(--shavey-navy);
+  --muted: #2A4260;
+  --muted-foreground: #B9C2CD;
+  --destructive: #F0897A;
+  --destructive-foreground: var(--shavey-navy);
+  --border: #2E4763;
+  --input: #7A91AD;
+  --ring: var(--shavey-brass);
+  --wordmark-accent: var(--shavey-brass);
+  color-scheme: dark;
 }
 
 @theme inline {
@@ -54,6 +85,7 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-wordmark-accent: var(--wordmark-accent);
   --color-navy: var(--shavey-navy);
   --color-brass: var(--shavey-brass);
   --color-pole-red: var(--shavey-pole-red);

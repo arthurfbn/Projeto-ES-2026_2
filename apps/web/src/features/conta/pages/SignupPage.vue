@@ -1,49 +1,39 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
+import { reactive } from 'vue'
 import { useRouter } from 'vue-router'
-import { fieldErrors, PASSWORD_MIN_LENGTH, signupRequestSchema } from '@shavey/contracts'
-import BrandMark from '@/components/BrandMark.vue'
+import { PASSWORD_MIN_LENGTH, signupRequestSchema } from '@shavey/contracts'
 import TextField from '@/components/TextField.vue'
-import { formErrorsFrom, type FormErrors } from '../form-errors'
+import { phoneMask } from '@/lib/masks'
+import AuthLayout from '../components/AuthLayout.vue'
+import { useFormErrors } from '../form-errors'
 import { useSignup } from '../queries'
 
 const router = useRouter()
 const signup = useSignup()
 
 const form = reactive({ name: '', email: '', phone: '', password: '' })
-const errors = ref<FormErrors>({ fields: {} })
+// Mesmo contrato da API: erro de formato aparece sem ida ao servidor.
+const { errors, validateAll, setFromRequest, clearIfValid } = useFormErrors(signupRequestSchema)
 
 async function submit() {
-  // Mesmo contrato da API: erro de formato aparece sem ida ao servidor.
-  const parsed = signupRequestSchema.safeParse(form)
-  if (!parsed.success) {
-    errors.value = { fields: fieldErrors(parsed.error) }
-    return
-  }
-  errors.value = { fields: {} }
+  if (!validateAll(form)) return
   try {
     await signup.mutateAsync(form)
     await router.push({ name: 'home' })
   } catch (error) {
-    errors.value = formErrorsFrom(error)
+    setFromRequest(error, form)
   }
 }
 </script>
 
 <template>
-  <main class="mx-auto flex min-h-dvh max-w-md flex-col gap-8 px-4 py-10">
-    <BrandMark />
-    <header class="flex flex-col gap-2">
-      <p class="font-display text-2xl font-extrabold">
-        Passa a máquina na fila.
-      </p>
-      <h1 class="text-lg font-semibold">
-        Crie sua conta
-      </h1>
-    </header>
-
+  <AuthLayout
+    tagline="Passa a máquina na fila."
+    title="Criar conta"
+    intro="Uma conta só para agendar em qualquer barbearia."
+  >
     <form
-      class="flex flex-col gap-4 rounded-xl border bg-card p-5"
+      class="flex flex-col gap-5"
       novalidate
       @submit.prevent="submit"
     >
@@ -52,29 +42,39 @@ async function submit() {
         label="Nome"
         autocomplete="name"
         :error="errors.fields.name"
+        @blur="clearIfValid('name', form.name)"
       />
       <TextField
         v-model="form.email"
         label="E-mail"
         type="email"
+        inputmode="email"
         autocomplete="email"
+        placeholder="nome@exemplo.com"
         :error="errors.fields.email"
+        @blur="clearIfValid('email', form.email)"
       />
       <TextField
         v-model="form.phone"
         label="Telefone"
         type="tel"
+        inputmode="tel"
         autocomplete="tel-national"
-        hint="Com DDD, ex.: (11) 98765-4321"
+        placeholder="(11) 98765-4321"
+        hint="Com DDD."
+        :mask="phoneMask"
         :error="errors.fields.phone"
+        @blur="clearIfValid('phone', form.phone)"
       />
       <TextField
         v-model="form.password"
         label="Senha"
         type="password"
         autocomplete="new-password"
-        :hint="`Pelo menos ${PASSWORD_MIN_LENGTH} caracteres`"
+        :placeholder="`Mínimo de ${PASSWORD_MIN_LENGTH} caracteres`"
+        :hint="`Pelo menos ${PASSWORD_MIN_LENGTH} caracteres.`"
         :error="errors.fields.password"
+        @blur="clearIfValid('password', form.password)"
       />
       <p
         v-if="errors.general"
@@ -85,14 +85,14 @@ async function submit() {
       </p>
       <button
         type="submit"
-        class="h-11 rounded-md bg-primary px-4 font-display font-extrabold text-primary-foreground disabled:opacity-60"
+        class="h-13 rounded-md bg-primary px-4 font-display text-lg font-extrabold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:opacity-60"
         :disabled="signup.isPending.value"
       >
         {{ signup.isPending.value ? 'Criando conta…' : 'Criar conta' }}
       </button>
     </form>
 
-    <p class="text-center text-sm">
+    <template #footer>
       Já tem conta?
       <RouterLink
         :to="{ name: 'login' }"
@@ -100,6 +100,6 @@ async function submit() {
       >
         Entrar
       </RouterLink>
-    </p>
-  </main>
+    </template>
+  </AuthLayout>
 </template>

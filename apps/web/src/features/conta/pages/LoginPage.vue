@@ -1,43 +1,37 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
+import { reactive } from 'vue'
 import { useRouter } from 'vue-router'
-import { fieldErrors, loginRequestSchema } from '@shavey/contracts'
-import BrandMark from '@/components/BrandMark.vue'
+import { loginRequestSchema } from '@shavey/contracts'
 import TextField from '@/components/TextField.vue'
-import { formErrorsFrom, type FormErrors } from '../form-errors'
+import AuthLayout from '../components/AuthLayout.vue'
+import { useFormErrors } from '../form-errors'
 import { useLogin } from '../queries'
 
 const router = useRouter()
 const login = useLogin()
 
 const form = reactive({ email: '', password: '' })
-const errors = ref<FormErrors>({ fields: {} })
+const { errors, validateAll, setFromRequest, clearIfValid } = useFormErrors(loginRequestSchema)
 
 async function submit() {
-  const parsed = loginRequestSchema.safeParse(form)
-  if (!parsed.success) {
-    errors.value = { fields: fieldErrors(parsed.error) }
-    return
-  }
-  errors.value = { fields: {} }
+  if (!validateAll(form)) return
   try {
     await login.mutateAsync(form)
     await router.push({ name: 'home' })
   } catch (error) {
-    errors.value = formErrorsFrom(error)
+    setFromRequest(error, form)
   }
 }
 </script>
 
 <template>
-  <main class="mx-auto flex min-h-dvh max-w-md flex-col gap-8 px-4 py-10">
-    <BrandMark />
-    <h1 class="text-2xl font-extrabold">
-      Entrar
-    </h1>
-
+  <AuthLayout
+    tagline="Máquina ligada, horário marcado."
+    title="Entrar"
+    intro="Acesse sua conta para ver e marcar horários."
+  >
     <form
-      class="flex flex-col gap-4 rounded-xl border bg-card p-5"
+      class="flex flex-col gap-5"
       novalidate
       @submit.prevent="submit"
     >
@@ -45,8 +39,11 @@ async function submit() {
         v-model="form.email"
         label="E-mail"
         type="email"
+        inputmode="email"
         autocomplete="email"
+        placeholder="nome@exemplo.com"
         :error="errors.fields.email"
+        @blur="clearIfValid('email', form.email)"
       />
       <TextField
         v-model="form.password"
@@ -54,6 +51,7 @@ async function submit() {
         type="password"
         autocomplete="current-password"
         :error="errors.fields.password"
+        @blur="clearIfValid('password', form.password)"
       />
       <p
         v-if="errors.general"
@@ -64,14 +62,14 @@ async function submit() {
       </p>
       <button
         type="submit"
-        class="h-11 rounded-md bg-primary px-4 font-display font-extrabold text-primary-foreground disabled:opacity-60"
+        class="h-13 rounded-md bg-primary px-4 font-display text-lg font-extrabold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:opacity-60"
         :disabled="login.isPending.value"
       >
         {{ login.isPending.value ? 'Entrando…' : 'Entrar' }}
       </button>
     </form>
 
-    <p class="text-center text-sm">
+    <template #footer>
       Ainda não tem conta?
       <RouterLink
         :to="{ name: 'signup' }"
@@ -79,6 +77,6 @@ async function submit() {
       >
         Criar conta
       </RouterLink>
-    </p>
-  </main>
+    </template>
+  </AuthLayout>
 </template>

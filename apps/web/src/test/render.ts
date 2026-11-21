@@ -1,6 +1,7 @@
 import { vi } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
 import { QueryClient, VueQueryPlugin } from '@tanstack/vue-query'
+import { createPinia } from 'pinia'
 import { createMemoryHistory } from 'vue-router'
 import { createAppRouter } from '@/router'
 import App from '@/App.vue'
@@ -12,7 +13,7 @@ export async function renderRoute(path: string) {
   await router.push(path)
   await router.isReady()
   const wrapper = mount(App, {
-    global: { plugins: [router, [VueQueryPlugin, { queryClient }]] },
+    global: { plugins: [createPinia(), router, [VueQueryPlugin, { queryClient }]] },
     attachTo: document.body,
   })
   await settle()

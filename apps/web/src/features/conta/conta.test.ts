@@ -27,12 +27,16 @@ function loggedIn() {
   server.use(http.get('*/api/me', () => HttpResponse.json(ana)))
 }
 
-async function fill(wrapper: Awaited<ReturnType<typeof renderRoute>>['wrapper'], values: Record<string, string>) {
-  for (const [label, value] of Object.entries(values)) {
-    const field = wrapper.findAll('label').find((l) => l.text() === label)
-    if (!field) throw new Error(`campo ${label} não encontrado`)
-    await wrapper.get(`#${field.attributes('for')}`).setValue(value)
-  }
+type Wrapper = Awaited<ReturnType<typeof renderRoute>>['wrapper']
+
+function input(wrapper: Wrapper, label: string) {
+  const field = wrapper.findAll('label').find((l) => l.text() === label)
+  if (!field) throw new Error(`campo ${label} não encontrado`)
+  return wrapper.get<HTMLInputElement>(`#${field.attributes('for')}`)
+}
+
+async function fill(wrapper: Wrapper, values: Record<string, string>) {
+  for (const [label, value] of Object.entries(values)) await input(wrapper, label).setValue(value)
 }
 
 const validSignup = { Nome: 'Ana Souza', 'E-mail': 'ana@exemplo.com', Telefone: '(11) 98765-4321', Senha: 'segredo123' }
@@ -73,6 +77,68 @@ describe('cadastro', () => {
     await settle()
 
     expect(wrapper.text()).toContain('E-mail já cadastrado.')
+  })
+
+  it('o erro de formato some ao sair do campo já corrigido', async () => {
+    visitor()
+    const { wrapper } = await renderRoute('/cadastro')
+
+    await fill(wrapper, { ...validSignup, Telefone: '98765-4321' })
+    await wrapper.get('form').trigger('submit')
+    await settle()
+    expect(input(wrapper, 'Telefone').attributes('aria-invalid')).toBe('true')
+
+    await input(wrapper, 'Telefone').setValue('(11) 98765-4321')
+    await input(wrapper, 'Telefone').trigger('blur')
+
+    expect(wrapper.text()).not.toContain('Informe o telefone com DDD')
+    expect(input(wrapper, 'Telefone').attributes('aria-invalid')).toBeUndefined()
+  })
+
+  it('o aviso de e-mail já cadastrado só some quando o e-mail muda', async () => {
+    visitor()
+    const conflict: ApiErrorBody = {
+      error: 'EMAIL_TAKEN',
+      message: 'E-mail já cadastrado.',
+      fields: { email: 'E-mail já cadastrado.' },
+    }
+    server.use(http.post('*/api/auth/signup', () => HttpResponse.json(conflict, { status: 409 })))
+    const { wrapper } = await renderRoute('/cadastro')
+    await fill(wrapper, validSignup)
+    await wrapper.get('form').trigger('submit')
+    await settle()
+
+    await input(wrapper, 'E-mail').trigger('blur')
+    expect(wrapper.text()).toContain('E-mail já cadastrado.')
+
+    await input(wrapper, 'E-mail').setValue('outra@exemplo.com')
+    await input(wrapper, 'E-mail').trigger('blur')
+    expect(wrapper.text()).not.toContain('E-mail já cadastrado.')
+  })
+
+  it('formata o telefone enquanto digita e não aceita letras nem dígitos a mais', async () => {
+    visitor()
+    const { wrapper } = await renderRoute('/cadastro')
+    const telefone = input(wrapper, 'Telefone')
+
+    await telefone.setValue('11a98765')
+    expect(telefone.element.value).toBe('(11) 9876-5')
+
+    await telefone.setValue('11987654321999')
+    expect(telefone.element.value).toBe('(11) 98765-4321')
+  })
+
+  it('o botão de olho mostra e oculta a senha', async () => {
+    visitor()
+    const { wrapper } = await renderRoute('/cadastro')
+    const senha = input(wrapper, 'Senha')
+    expect(senha.attributes('type')).toBe('password')
+
+    await wrapper.get('button[aria-label="Mostrar senha"]').trigger('click')
+    expect(senha.attributes('type')).toBe('text')
+
+    await wrapper.get('button[aria-label="Ocultar senha"]').trigger('click')
+    expect(senha.attributes('type')).toBe('password')
   })
 
   it('CA1: depois de cadastrar, entra logado e vê a visão de cliente', async () => {
