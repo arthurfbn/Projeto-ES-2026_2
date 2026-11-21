@@ -1,6 +1,6 @@
 import { buildApp } from './app'
 import { createBarbershopsModule } from './modules/barbearias'
-import { createIdentityModule } from './modules/identidade'
+import { createIdentityModule, createUserDirectory } from './modules/identidade'
 import { systemClock } from './shared/clock'
 import { loadConfig } from './shared/config'
 import { createDb } from './shared/db/prisma'
@@ -43,7 +43,15 @@ const app = await buildApp({
   version: config.version,
   logger,
   allowedOrigins: config.webOrigins,
-  modules: [identity, createBarbershopsModule({ db, clock: systemClock, requireUser: identity.requireUser })],
+  modules: [
+    identity,
+    createBarbershopsModule({
+      db,
+      clock: systemClock,
+      requireUser: identity.requireUser,
+      users: createUserDirectory(db),
+    }),
+  ],
 })
 
 async function shutdown(signal: string) {

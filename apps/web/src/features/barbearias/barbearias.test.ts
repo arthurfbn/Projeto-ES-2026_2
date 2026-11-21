@@ -43,6 +43,10 @@ function loggedIn() {
 
 type Wrapper = Awaited<ReturnType<typeof renderRoute>>['wrapper']
 
+/** Perfis exibidos no cabeçalho da barbearia (a página tem outros textos com "Barbeiro"). */
+const roles = (wrapper: Wrapper) =>
+  wrapper.findAll('[aria-label="Seus perfis nesta barbearia"] li').map((li) => li.text())
+
 function input(wrapper: Wrapper, label: string) {
   const field = wrapper.findAll('label').find((l) => l.text() === label)
   if (!field) throw new Error(`campo ${label} não encontrado`)
@@ -104,8 +108,7 @@ describe('criar barbearia', () => {
 
     expect(sent).toMatchObject({ name: 'Barbearia do Zé', cep: '01310-100', state: 'sp', alsoBarber: true })
     expect(router.currentRoute.value.params).toMatchObject({ barbershopId: shopId })
-    expect(wrapper.text()).toContain('Gerente')
-    expect(wrapper.text()).toContain('Barbeiro')
+    expect(roles(wrapper)).toEqual(['Gerente', 'Barbeiro'])
     expect(wrapper.text()).toContain('01310-100')
   })
 
@@ -115,8 +118,7 @@ describe('criar barbearia', () => {
     const { wrapper } = await renderRoute(`/barbearias/${shopId}`)
     await waitUntil(() => wrapper.text().includes('Barbearia do Zé'))
 
-    expect(wrapper.text()).toContain('Gerente')
-    expect(wrapper.text()).not.toContain('Barbeiro')
+    expect(roles(wrapper)).toEqual(['Gerente'])
   })
 
   it('R14b: mostra o motivo no "eu também atendo" quando a API recusa', async () => {

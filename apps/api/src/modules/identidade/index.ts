@@ -2,7 +2,11 @@ import type { FastifyInstance } from 'fastify'
 import type { Clock } from '../../shared/clock'
 import type { Db } from '../../shared/db/prisma'
 import { createArgon2PasswordHasher } from './adapters/argon2-password-hasher'
-import { createPrismaSessionRepository, createPrismaUserRepository } from './adapters/prisma-identity-repositories'
+import {
+  createPrismaSessionRepository,
+  createPrismaUserDirectory,
+  createPrismaUserRepository,
+} from './adapters/prisma-identity-repositories'
 import type { IdentityPorts } from './app/ports'
 import { createRequireUser, registerIdentityRoutes, type AuthRateLimit } from './http/routes'
 
@@ -12,6 +16,9 @@ import { createRequireUser, registerIdentityRoutes, type AuthRateLimit } from '.
  */
 export type { AuthUser } from './app/use-cases'
 export { SESSION_COOKIE } from './http/routes'
+
+/** Busca de usuário por e-mail para outros módulos (ex.: convites), sem expor a tabela `users`. */
+export const createUserDirectory = createPrismaUserDirectory
 
 export type IdentityModuleOptions = {
   db: Db
