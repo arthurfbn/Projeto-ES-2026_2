@@ -18,7 +18,9 @@ O ADR-0009 previa trunk-based: toda fatia entrava direto na `main`, que é produ
 | `main` | domínio de produção | ambiente `production` | demo e uso real |
 | PR | preview da Vercel | API da `develop` | conferir a tela da fatia |
 
-- O `vercel.json` escolhe a API pelo domínio acessado (regra `has` por host): o domínio de produção vai para a API de produção; os demais (develop e previews) para a API da `develop`.
+- O `vercel.json` escolhe a API pelo domínio acessado (regra `has` por host, avaliada antes da regra padrão):
+  - `projeto-es-2026-2-*.vercel.app` (domínio da `develop`, `projeto-es-2026-2-develop.vercel.app`, e URLs de preview e de deploy) → API da `develop` (`projeto-es-20262-develop-96aec1f9.up.railway.app`);
+  - qualquer outro host, inclusive o domínio de produção → API de produção (`projeto-es-20262-production.up.railway.app`). Na dúvida, cai na produção.
 - Branches de trabalho continuam curtas (1–2 dias) e a `develop` também fica sempre implantável: quebrou, reverte primeiro.
 
 ## Alternativas
