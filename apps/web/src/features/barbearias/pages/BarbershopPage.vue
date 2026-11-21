@@ -4,6 +4,7 @@ import { useRoute } from 'vue-router'
 import AppHeader from '@/components/AppHeader.vue'
 import { ApiError } from '@/lib/http'
 import { formatCep } from '@/lib/masks'
+import InviteSection from '../components/InviteSection.vue'
 import ServicesSection from '../components/ServicesSection.vue'
 import TeamSection from '../components/TeamSection.vue'
 import { useBarbershop } from '../queries'
@@ -87,15 +88,11 @@ const notFound = computed(() => error.value instanceof ApiError && error.value.s
         </address>
       </section>
 
-      <ServicesSection
-        v-if="data?.roles.manager"
-        :barbershop-id="barbershopId"
-      />
-
-      <TeamSection
-        v-if="data?.roles.manager"
-        :barbershop-id="barbershopId"
-      />
+      <template v-if="data?.roles.manager">
+        <ServicesSection :barbershop-id="barbershopId" />
+        <TeamSection :barbershop-id="barbershopId" />
+        <InviteSection :barbershop-id="barbershopId" />
+      </template>
     </main>
   </div>
 </template>

@@ -3,7 +3,7 @@ import { apiErrorSchema, barbershopResponseSchema, type CreateBarbershopRequest 
 import { buildApp } from '../../../app'
 import { fixedClock } from '../../../shared/clock'
 import { createDb } from '../../../shared/db/prisma'
-import { createIdentityModule, SESSION_COOKIE } from '../../identidade'
+import { createIdentityModule, createUserDirectory, SESSION_COOKIE } from '../../identidade'
 import { createBarbershopsModule } from '../index'
 
 const databaseUrl = process.env.DATABASE_URL
@@ -19,10 +19,7 @@ async function makeApp() {
     probe: { isUp: async () => true },
     errorReporter: { capture() {}, async flush() {} },
     version: 'test',
-    modules: [
-      identity,
-      createBarbershopsModule({ db, clock, requireUser: identity.requireUser, findUserNames: identity.findUserNames }),
-    ],
+    modules: [identity, createBarbershopsModule({ db, clock, requireUser: identity.requireUser, users: createUserDirectory(db) })],
   })
 }
 

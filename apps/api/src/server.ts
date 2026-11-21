@@ -1,6 +1,6 @@
 import { buildApp } from './app'
 import { createBarbershopsModule } from './modules/barbearias'
-import { createIdentityModule } from './modules/identidade'
+import { createIdentityModule, createUserDirectory } from './modules/identidade'
 import { systemClock } from './shared/clock'
 import { loadConfig } from './shared/config'
 import { createDb } from './shared/db/prisma'
@@ -49,7 +49,7 @@ const app = await buildApp({
       db,
       clock: systemClock,
       requireUser: identity.requireUser,
-      findUserNames: identity.findUserNames,
+      users: createUserDirectory(db),
     }),
   ],
 })

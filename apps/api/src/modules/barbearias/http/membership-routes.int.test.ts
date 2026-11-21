@@ -3,7 +3,7 @@ import { barbershopResponseSchema, membershipListResponseSchema, membershipRespo
 import { buildApp } from '../../../app'
 import { fixedClock } from '../../../shared/clock'
 import { createDb } from '../../../shared/db/prisma'
-import { createIdentityModule, SESSION_COOKIE } from '../../identidade'
+import { createIdentityModule, createUserDirectory, SESSION_COOKIE } from '../../identidade'
 import type { AvailabilityReader } from '../app/ports'
 import type { WeeklyWindow } from '../core/allowed-shift'
 import { createBarbershopsModule } from '../index'
@@ -29,7 +29,7 @@ async function makeApp() {
         db,
         clock,
         requireUser: identity.requireUser,
-        findUserNames: identity.findUserNames,
+        users: createUserDirectory(db),
         availability: availabilityReader,
       }),
     ],

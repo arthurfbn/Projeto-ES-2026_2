@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AppHeader from '@/components/AppHeader.vue'
+import ReceivedInvitations from '@/features/barbearias/components/ReceivedInvitations.vue'
 import AccountPanel from '@/features/conta/components/AccountPanel.vue'
 import HealthStatus from '@/features/sistema/HealthStatus.vue'
 </script>
@@ -11,6 +12,7 @@ import HealthStatus from '@/features/sistema/HealthStatus.vue'
       <p class="font-display text-[2.25rem] font-extrabold leading-[1.05] tracking-[-0.02em] sm:text-[2.625rem]">
         Passa a máquina na fila.
       </p>
+      <ReceivedInvitations />
       <AccountPanel />
       <HealthStatus />
     </main>

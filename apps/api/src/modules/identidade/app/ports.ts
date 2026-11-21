@@ -14,8 +14,6 @@ export type NewUser = Omit<UserRecord, 'id'>
 export interface UserRepository {
   findByEmail(email: string): Promise<UserRecord | null>
   findById(id: string): Promise<UserRecord | null>
-  /** Só id e nome: o que outros módulos podem ver de um usuário (ex.: nome do barbeiro no vínculo). */
-  findNamesByIds(ids: readonly string[]): Promise<Array<Pick<UserRecord, 'id' | 'name'>>>
   /** Traduz a violação de unicidade do e-mail (corrida entre dois cadastros) em erro de domínio. */
   create(user: NewUser): Promise<Result<UserRecord, 'EMAIL_TAKEN'>>
 }

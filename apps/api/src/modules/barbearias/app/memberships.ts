@@ -7,7 +7,7 @@ export type MembershipView = Omit<MembershipRecord, 'userId'> & { barber: { id: 
 type NotFound = 'MEMBERSHIP_NOT_FOUND'
 
 async function toViews(ports: BarbershopPorts, memberships: MembershipRecord[]): Promise<MembershipView[]> {
-  const names = await ports.findUserNames(memberships.map((membership) => membership.userId))
+  const names = await ports.users.findNamesByIds(memberships.map((membership) => membership.userId))
   return memberships.map(({ userId, ...membership }) => ({
     ...membership,
     barber: { id: userId, name: names.get(userId) ?? '' },
