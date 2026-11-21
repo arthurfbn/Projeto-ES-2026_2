@@ -2,12 +2,23 @@
 @import 'tailwindcss';
 @import './tokens.css';
 
+/* Tema escuro por classe no <html> (escolha do usuário), não só pela preferência do sistema. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @layer base {
   * {
     @apply border-border;
   }
   body {
     @apply bg-background text-foreground font-sans antialiased;
+  }
+  /* O preflight do Tailwind v4 deixa <button> com cursor de seta; tudo que é clicável mostra a mão. */
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
+  button:disabled {
+    cursor: not-allowed;
   }
   h1,
   h2,

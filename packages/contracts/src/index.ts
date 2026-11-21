@@ -4,3 +4,4 @@
  * os tipos derivados mantêm os dois lados em sincronia no typecheck.
  */
 export * from './health'
+export * from './auth'

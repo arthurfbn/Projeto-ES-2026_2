@@ -137,5 +137,24 @@ Arquivo único `apps/web/src/styles/tokens.css` (Tailwind v4 + shadcn-vue). Comp
 
 `--muted` (`#EDE3D3`) é um tom derivado do papel para fundos de campos desabilitados e linhas zebradas; não está no canvas e pode ser ajustado.
 
+`--input` (`#958468`) é o contorno dos campos: derivado da borda `line`, com 3,6:1 sobre branco (WCAG 1.4.11 pede 3:1 para contorno de campo; a `line` pura tem 1,4:1). `--wordmark-accent` é a cor do **y** do wordmark: vermelho poste no tema claro, latão no escuro.
+
+## Tema escuro
+Alternado pelo usuário (botão sol/lua no cabeçalho); sem escolha salva, segue a preferência do sistema. A escolha fica só no navegador (`localStorage`, chave `shavey-theme`) e é aplicada antes da primeira pintura.
+- Fundo **marinho**, texto **papel**, ação principal em **latão** com texto marinho (5,6:1).
+- Logo: símbolo **negativo** (`brand/shavey-simbolo-negativo.svg`) e **y** do wordmark em latão.
+- Tons derivados, escolhidos por contraste:
+
+| Token (`.dark`) | Hex | Contraste |
+|---|---|---|
+| `--card` | `#1F344D` | papel sobre ele 10,9 |
+| `--muted-foreground` | `#B9C2CD` | 8,2 sobre marinho · 7,0 sobre cartão |
+| `--destructive` | `#F0897A` | 6,0 sobre marinho · 5,2 sobre cartão (o vermelho poste dá só 2,6 sobre marinho) |
+| `--border` | `#2E4763` | divisor decorativo |
+| `--input` | `#7A91AD` | 3,9 sobre cartão |
+| `--muted` | `#2A4260` | papel sobre ele 8,8 |
+
+Componentes não usam `dark:`: trocam de tema só pelos tokens.
+
 ## Fora do MVP
-Tema escuro, ilustrações e mascote animado.
+Ilustrações e mascote animado.

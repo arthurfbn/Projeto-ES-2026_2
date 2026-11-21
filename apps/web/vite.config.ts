@@ -15,7 +15,8 @@ export default defineConfig({
     proxy: {
       '/api': {
         target: 'http://localhost:3333',
-        changeOrigin: true,
+        // Mantém o Host do navegador: a checagem de Origin da API (ADR-0006) compara com ele.
+        changeOrigin: false,
         rewrite: (path) => path.replace(/^\/api/, ''),
       },
     },
