@@ -5,7 +5,8 @@ import { z } from 'zod'
  * então ficam em português e sóbrias (docs/design-system.md, "Voz").
  */
 
-const emailSchema = z
+/** E-mail normalizado (trim + minúsculas): unicidade sem diferenciar caixa (R1). */
+export const emailSchema = z
   .string()
   .trim()
   .toLowerCase()
