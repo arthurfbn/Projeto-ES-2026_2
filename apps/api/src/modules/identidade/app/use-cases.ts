@@ -1,4 +1,5 @@
 import { createHash, randomBytes } from 'node:crypto'
+import type { MeResponse } from '@shavey/contracts'
 import { fail, ok, type Result } from '../../../shared/result'
 import { isSessionActive, sessionExpiresAt } from '../core/session'
 import type { IdentityPorts, UserRecord } from './ports'
@@ -59,6 +60,11 @@ export async function logIn(
 
 export async function logOut(ports: IdentityPorts, token: string): Promise<void> {
   await ports.sessions.deleteByTokenHash(hashToken(token))
+}
+
+/** R5: o usuário e seus perfis por barbearia (cliente é implícito). */
+export async function describeMe(ports: IdentityPorts, user: AuthUser): Promise<MeResponse> {
+  return { user, barbershops: await ports.profiles.listForUser(user.id) }
 }
 
 /** Usuário dono do token, ou null se a sessão não existe ou expirou (e então é apagada). */

@@ -5,6 +5,12 @@ import { createPrismaBarbershopRepository } from './adapters/prisma-barbershop-r
 import type { BarbershopPorts } from './app/ports'
 import { registerBarbershopRoutes } from './http/routes'
 
+/**
+ * Perfis de um usuário por barbearia, para o /me do módulo identidade (R5). Criado à parte do
+ * módulo porque a identidade nasce antes dele (o módulo barbearias usa o `requireUser` dela).
+ */
+export { createPrismaBarbershopProfilesQuery as createBarbershopProfilesQuery } from './adapters/prisma-barbershop-profiles-query'
+
 /** API pública do módulo barbearias (barbearia, gerência e vínculos). */
 export type BarbershopsModuleOptions = {
   db: Db
