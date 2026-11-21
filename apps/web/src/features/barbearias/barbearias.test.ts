@@ -6,6 +6,8 @@ import { renderRoute, settle, waitUntil } from '@/test/render'
 
 const server = setupServer(
   http.get('*/api/health', () => HttpResponse.json({ status: 'ok', database: 'up', version: 'test' })),
+  // Estes testes preenchem o endereço à mão; a busca por CEP (#21) tem os testes dela.
+  http.get('https://viacep.com.br/ws/:cep/json/', () => HttpResponse.json({ erro: 'true' })),
 )
 beforeAll(() => server.listen({ onUnhandledFrame: 'error' }))
 afterEach(() => {
