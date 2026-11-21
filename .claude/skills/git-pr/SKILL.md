@@ -39,5 +39,5 @@ Comentários com prefixo `bloqueante:`, `sugestão:` ou `dúvida:`.
 
 ## Merge
 Fatia → `develop`: squash merge com título Conventional Commit; apagar a branch.
-Promoção `develop` → `main`: PR com merge commit (não squash), CI verde e conferência no ambiente da `develop`; no mínimo antes de cada demo.
+Release `develop` → `main`: PR com merge commit (não squash), CI verde e conferência no ambiente da `develop`; no mínimo antes de cada demo. A `main` é a branch padrão: issues com `Closes #n` fecham na release.
 `develop` ou `main` quebrada = prioridade zero: reverter primeiro, investigar depois.

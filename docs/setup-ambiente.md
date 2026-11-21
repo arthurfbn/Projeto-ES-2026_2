@@ -194,7 +194,7 @@ Variáveis `VITE_*` são públicas (vão para o navegador): nunca coloque segred
 ## 11. Ambiente de homologação da `develop` [A+B] (ADR-0020)
 
 ### GitHub
-1. **Settings → General → Default branch** → `develop`. Assim PRs abrem para a `develop` por padrão e `Closes #n` fecha a issue no merge.
+1. A branch padrão **continua `main`** (produção). Ao abrir PR de fatia pelo site, troque a base para `develop`.
 2. Ruleset da seção 2.3 incluindo a `develop` (PR obrigatório + os dois checks do CI).
 
 ### Railway
