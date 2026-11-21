@@ -27,6 +27,12 @@ export function createPrismaUserDirectory(db: Db) {
   return {
     findIdByEmail: (email: string): Promise<{ id: string } | null> =>
       db.user.findUnique({ where: { email }, select: { id: true } }),
+    /** Só id e nome: o que outros módulos podem ver de um usuário (ex.: barbeiro no vínculo). */
+    async findNamesByIds(ids: readonly string[]): Promise<Map<string, string>> {
+      if (ids.length === 0) return new Map()
+      const users = await db.user.findMany({ where: { id: { in: [...ids] } }, select: { id: true, name: true } })
+      return new Map(users.map((user) => [user.id, user.name]))
+    },
   }
 }
 

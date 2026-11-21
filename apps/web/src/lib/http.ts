@@ -22,7 +22,7 @@ export class ApiError extends Error {
 const API_BASE = '/api'
 
 async function request(
-  method: 'GET' | 'POST' | 'PATCH',
+  method: 'GET' | 'POST' | 'PATCH' | 'PUT',
   path: string,
   options: { body?: unknown; acceptStatuses?: number[]; signal?: AbortSignal },
 ): Promise<unknown> {
@@ -57,6 +57,10 @@ export async function apiPost<S extends z.ZodType>(path: string, body: unknown, 
 
 export async function apiPatch<S extends z.ZodType>(path: string, body: unknown, schema: S): Promise<z.infer<S>> {
   return schema.parse(await request('PATCH', path, { body }))
+}
+
+export async function apiPut<S extends z.ZodType>(path: string, body: unknown, schema: S): Promise<z.infer<S>> {
+  return schema.parse(await request('PUT', path, { body }))
 }
 
 /** POST sem corpo de resposta (ex.: 204 do logout). */
