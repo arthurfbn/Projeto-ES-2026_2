@@ -46,8 +46,22 @@ export const userSchema = z.object({
   phone: z.string(),
 })
 
-/** GET /me, POST /auth/signup e POST /auth/login. Perfis por barbearia entram na #8. */
-export const meResponseSchema = z.object({ user: userSchema })
+/**
+ * Perfis do usuário numa barbearia (R5): gerente e/ou barbeiro com vínculo ativo.
+ * Ser cliente é implícito: todo usuário é cliente (R2).
+ */
+export const barbershopProfileSchema = z.object({
+  barbershopId: z.uuid(),
+  barbershopName: z.string(),
+  manager: z.boolean(),
+  barber: z.boolean(),
+})
+
+/** GET /me, POST /auth/signup e POST /auth/login: o usuário e seus perfis por barbearia. */
+export const meResponseSchema = z.object({
+  user: userSchema,
+  barbershops: z.array(barbershopProfileSchema),
+})
 
 /** Corpo de erro padrão da API: código estável + mensagem para o usuário + erros por campo. */
 export const apiErrorSchema = z.object({
@@ -64,6 +78,7 @@ export const authErrorMessages = {
 export type SignupRequest = z.input<typeof signupRequestSchema>
 export type LoginRequest = z.input<typeof loginRequestSchema>
 export type User = z.infer<typeof userSchema>
+export type BarbershopProfile = z.infer<typeof barbershopProfileSchema>
 export type MeResponse = z.infer<typeof meResponseSchema>
 export type ApiErrorBody = z.infer<typeof apiErrorSchema>
 

@@ -17,6 +17,7 @@ afterAll(() => server.close())
 
 const ana: MeResponse = {
   user: { id: '6f1c2d3e-4a5b-4c6d-8e9f-0a1b2c3d4e5f', name: 'Ana Souza', email: 'ana@exemplo.com', phone: '11987654321' },
+  barbershops: [],
 }
 
 function visitor() {

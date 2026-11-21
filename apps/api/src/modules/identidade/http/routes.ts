@@ -1,8 +1,8 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
-import { authErrorMessages, loginRequestSchema, signupRequestSchema, type MeResponse } from '@shavey/contracts'
+import { authErrorMessages, loginRequestSchema, signupRequestSchema } from '@shavey/contracts'
 import { parseBodyOrReply } from '../../../shared/http/validation'
 import type { IdentityPorts } from '../app/ports'
-import { currentUser, logIn, logOut, signUp, type AuthUser, type SessionStart } from '../app/use-cases'
+import { currentUser, describeMe, logIn, logOut, signUp, type AuthUser, type SessionStart } from '../app/use-cases'
 
 export const SESSION_COOKIE = 'shavey_session'
 
@@ -25,8 +25,6 @@ function setSessionCookie(reply: FastifyReply, session: SessionStart) {
     expires: session.expiresAt,
   })
 }
-
-const meBody = (user: AuthUser): MeResponse => ({ user })
 
 /** preHandler das rotas autenticadas: 401 sem sessão válida; senão `request.user` fica preenchido. */
 export function createRequireUser(ports: IdentityPorts) {
@@ -59,7 +57,7 @@ export function registerIdentityRoutes(
       return reply.code(409).send({ error: result.error, message, fields: { email: message } })
     }
     setSessionCookie(reply, result.value)
-    return reply.code(201).send(meBody(result.value.user))
+    return reply.code(201).send(await describeMe(ports, result.value.user))
   })
 
   app.post('/auth/login', limited, async (request, reply) => {
@@ -71,7 +69,7 @@ export function registerIdentityRoutes(
       return reply.code(401).send({ error: result.error, message: authErrorMessages.INVALID_CREDENTIALS })
     }
     setSessionCookie(reply, result.value)
-    return reply.send(meBody(result.value.user))
+    return reply.send(await describeMe(ports, result.value.user))
   })
 
   app.post('/auth/logout', async (request, reply) => {
@@ -84,6 +82,6 @@ export function registerIdentityRoutes(
   app.get('/me', { preHandler: requireUser }, async (request, reply) => {
     // requireUser garante o usuário; a checagem satisfaz o tipo sem asserção.
     if (!request.user) return reply.code(401).send({ error: 'UNAUTHENTICATED' })
-    return reply.send(meBody(request.user))
+    return reply.send(await describeMe(ports, request.user))
   })
 }

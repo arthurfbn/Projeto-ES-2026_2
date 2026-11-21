@@ -6,10 +6,12 @@ import AppHeader from '@/components/AppHeader.vue'
 import TextField from '@/components/TextField.vue'
 import { useFormErrors } from '@/features/conta/form-errors'
 import { cepMask } from '@/lib/masks'
+import { useViewStore } from '@/stores/view'
 import { useCreateBarbershop } from '../queries'
 
 const router = useRouter()
 const create = useCreateBarbershop()
+const viewStore = useViewStore()
 const alsoBarberId = useId()
 
 const form = reactive({
@@ -30,6 +32,8 @@ async function submit() {
   if (!validateAll(form)) return
   try {
     const created = await create.mutateAsync(form)
+    // Quem cria a barbearia passa a vê-la como gerente (R8).
+    viewStore.select({ kind: 'manager', barbershopId: created.barbershop.id })
     await router.push({ name: 'barbershop', params: { barbershopId: created.barbershop.id } })
   } catch (error) {
     setFromRequest(error, form)

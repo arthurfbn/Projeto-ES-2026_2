@@ -1,10 +1,15 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest'
-import { apiErrorSchema, barbershopResponseSchema, type CreateBarbershopRequest } from '@shavey/contracts'
+import {
+  apiErrorSchema,
+  barbershopResponseSchema,
+  meResponseSchema,
+  type CreateBarbershopRequest,
+} from '@shavey/contracts'
 import { buildApp } from '../../../app'
 import { fixedClock } from '../../../shared/clock'
 import { createDb } from '../../../shared/db/prisma'
 import { createIdentityModule, SESSION_COOKIE } from '../../identidade'
-import { createBarbershopsModule } from '../index'
+import { createBarbershopProfilesQuery, createBarbershopsModule } from '../index'
 
 const databaseUrl = process.env.DATABASE_URL
 if (!databaseUrl) throw new Error('DATABASE_URL é obrigatória nos testes de integração')
@@ -14,7 +19,12 @@ const now = '2026-11-21T10:00:00-03:00'
 const clock = fixedClock(now)
 
 async function makeApp() {
-  const identity = createIdentityModule({ db, clock, authRateLimit: { max: 1000, timeWindow: '1 minute' } })
+  const identity = createIdentityModule({
+    db,
+    clock,
+    profiles: createBarbershopProfilesQuery(db),
+    authRateLimit: { max: 1000, timeWindow: '1 minute' },
+  })
   return buildApp({
     probe: { isUp: async () => true },
     errorReporter: { capture() {}, async flush() {} },
@@ -168,5 +178,75 @@ describe('GET /barbershops/:barbershopId', () => {
 
     expect((await getShop(app, token, '00000000-0000-4000-8000-000000000000')).statusCode).toBe(404)
     expect((await getShop(app, token, 'nao-e-uuid')).statusCode).toBe(404)
+  })
+})
+
+describe('GET /me com perfis por barbearia (R5, CA4)', () => {
+  function me(app: App, token: string) {
+    return app.inject({ method: 'GET', url: '/me', cookies: { [SESSION_COOKIE]: token } })
+  }
+
+  /** Vínculo de barbeiro criado direto no banco: o fluxo de convite chega na #10. */
+  async function addBarber(barbershopId: string, userId: string, approvedByUserId: string, isActive = true) {
+    await db.barberMembership.create({
+      data: {
+        barbershopId,
+        userId,
+        approvedByUserId,
+        hiredAt: new Date(now),
+        isExclusive: false,
+        acceptsAppointments: true,
+        isActive,
+      },
+    })
+  }
+
+  it('CA4: gerente de A e barbeiro de B vê os dois perfis, cada um na sua barbearia', async () => {
+    const app = await makeApp()
+    const ze = await signUp(app, 'ze@exemplo.com')
+    const maria = await signUp(app, 'maria@exemplo.com')
+    const shopA = barbershopResponseSchema.parse((await createShop(app, ze.token, { ...validShop, name: 'Navalha' })).json())
+    const shopB = barbershopResponseSchema.parse((await createShop(app, maria.token, { ...validShop, name: 'Capital' })).json())
+    await addBarber(shopB.barbershop.id, ze.userId, maria.userId)
+
+    const response = await me(app, ze.token)
+
+    expect(response.statusCode).toBe(200)
+    expect(meResponseSchema.parse(response.json()).barbershops).toEqual([
+      { barbershopId: shopB.barbershop.id, barbershopName: 'Capital', manager: false, barber: true },
+      { barbershopId: shopA.barbershop.id, barbershopName: 'Navalha', manager: true, barber: false },
+    ])
+  })
+
+  it('gerente que também atende aparece com os dois perfis na mesma barbearia', async () => {
+    const app = await makeApp()
+    const ze = await signUp(app, 'ze@exemplo.com')
+    await createShop(app, ze.token, { ...validShop, alsoBarber: true })
+
+    const body = meResponseSchema.parse((await me(app, ze.token)).json())
+    expect(body.barbershops).toMatchObject([{ barbershopName: 'Barbearia do Zé', manager: true, barber: true }])
+  })
+
+  it('vínculo inativo não conta como perfil de barbeiro', async () => {
+    const app = await makeApp()
+    const ze = await signUp(app, 'ze@exemplo.com')
+    const maria = await signUp(app, 'maria@exemplo.com')
+    const shop = barbershopResponseSchema.parse((await createShop(app, maria.token)).json())
+    await addBarber(shop.barbershop.id, ze.userId, maria.userId, false)
+
+    expect(meResponseSchema.parse((await me(app, ze.token)).json()).barbershops).toEqual([])
+  })
+
+  it('o login já devolve os perfis (a web monta o seletor sem outra ida à API)', async () => {
+    const app = await makeApp()
+    const ze = await signUp(app, 'ze@exemplo.com')
+    await createShop(app, ze.token)
+
+    const login = await app.inject({
+      method: 'POST',
+      url: '/auth/login',
+      payload: { email: 'ze@exemplo.com', password: 'segredo123' },
+    })
+    expect(meResponseSchema.parse(login.json()).barbershops).toHaveLength(1)
   })
 })

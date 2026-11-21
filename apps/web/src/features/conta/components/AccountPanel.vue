@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { useMe, useLogout } from '../queries'
+import { useViews } from '../views'
 
 const { data: me, isPending, isError, refetch } = useMe()
 const logout = useLogout()
+const { current } = useViews()
 </script>
 
 <template>
@@ -35,7 +37,7 @@ const logout = useLogout()
       class="flex flex-col gap-3"
     >
       <p class="text-sm text-muted-foreground">
-        Visão: Cliente
+        Visão: {{ current?.label ?? 'Cliente' }}
       </p>
       <h2 class="text-2xl font-extrabold">
         Olá, {{ me.user.name }}

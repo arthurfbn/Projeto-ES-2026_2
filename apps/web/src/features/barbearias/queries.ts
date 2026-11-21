@@ -2,6 +2,7 @@ import { computed, toValue, type MaybeRefOrGetter } from 'vue'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
 import type { CreateBarbershopRequest } from '@shavey/contracts'
 import { ApiError } from '@/lib/http'
+import { meQueryKey } from '@/features/conta/queries'
 import { createBarbershop, fetchBarbershop } from './api'
 
 export const barbershopQueryKey = (barbershopId: string) => ['barbershops', barbershopId] as const
@@ -20,6 +21,10 @@ export function useCreateBarbershop() {
   return useMutation({
     mutationFn: (input: CreateBarbershopRequest) => createBarbershop(input),
     // A página da barbearia abre já com os dados, sem nova ida à API.
-    onSuccess: (created) => queryClient.setQueryData(barbershopQueryKey(created.barbershop.id), created),
+    onSuccess: async (created) => {
+      queryClient.setQueryData(barbershopQueryKey(created.barbershop.id), created)
+      // Novo perfil (gerente, e talvez barbeiro): o seletor de visão precisa saber.
+      await queryClient.invalidateQueries({ queryKey: meQueryKey })
+    },
   })
 }

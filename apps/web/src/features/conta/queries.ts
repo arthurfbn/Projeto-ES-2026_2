@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/vue-query'
 import type { LoginRequest, MeResponse, SignupRequest } from '@shavey/contracts'
+import { useViewStore } from '@/stores/view'
 import { fetchMe, login, logout, signup } from './api'
 
 export const meQueryKey = ['me'] as const
@@ -37,9 +38,12 @@ export function useLogin() {
 
 export function useLogout() {
   const queryClient = useQueryClient()
+  const viewStore = useViewStore()
   return useMutation({
     mutationFn: () => logout(),
     onSuccess: () => {
+      // A próxima pessoa a entrar neste navegador começa na visão de cliente.
+      viewStore.reset()
       // Nada do usuário anterior pode sobrar em cache; a consulta de sessão continua viva, agora vazia.
       queryClient.removeQueries({ predicate: (query) => query.queryKey[0] !== meQueryKey[0] })
       queryClient.setQueryData(meQueryKey, null)
