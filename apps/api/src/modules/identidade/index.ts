@@ -17,7 +17,7 @@ import { createRequireUser, registerIdentityRoutes, type AuthRateLimit } from '.
 export type { AuthUser } from './app/use-cases'
 export { SESSION_COOKIE } from './http/routes'
 
-/** Busca de usuário por e-mail para outros módulos (ex.: convites), sem expor a tabela `users`. */
+/** Consulta de usuários para outros módulos (convites, vínculos), sem expor a tabela `users`. */
 export const createUserDirectory = createPrismaUserDirectory
 
 export type IdentityModuleOptions = {

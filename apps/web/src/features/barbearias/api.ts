@@ -1,6 +1,8 @@
 import {
   acceptInvitationResponseSchema,
   barbershopResponseSchema,
+  membershipListResponseSchema,
+  membershipResponseSchema,
   receivedInvitationListResponseSchema,
   sentInvitationResponseSchema,
   serviceListResponseSchema,
@@ -10,12 +12,15 @@ import {
   type CreateBarbershopRequest,
   type CreateInvitationRequest,
   type CreateServiceRequest,
+  type Membership,
   type ReceivedInvitation,
   type SentInvitationResponse,
   type Service,
+  type UpdateMembershipRequest,
   type UpdateServiceRequest,
+  type WeeklyWindow,
 } from '@shavey/contracts'
-import { apiGet, apiPatch, apiPost } from '@/lib/http'
+import { apiGet, apiPatch, apiPost, apiPut } from '@/lib/http'
 
 export function createBarbershop(input: CreateBarbershopRequest): Promise<BarbershopResponse> {
   return apiPost('/barbershops', input, barbershopResponseSchema)
@@ -54,4 +59,24 @@ export function acceptInvitation(invitationId: string): Promise<AcceptInvitation
 export async function updateService(barbershopId: string, serviceId: string, patch: UpdateServiceRequest): Promise<Service> {
   const path = `${servicesPath(barbershopId)}/${encodeURIComponent(serviceId)}`
   return (await apiPatch(path, patch, serviceResponseSchema)).service
+}
+
+const membershipsPath = (barbershopId: string) => `/barbershops/${encodeURIComponent(barbershopId)}/memberships`
+
+export async function fetchMemberships(barbershopId: string, signal?: AbortSignal): Promise<Membership[]> {
+  return (await apiGet(membershipsPath(barbershopId), membershipListResponseSchema, { signal })).memberships
+}
+
+export async function updateShift(barbershopId: string, membershipId: string, windows: WeeklyWindow[]): Promise<Membership> {
+  const path = `${membershipsPath(barbershopId)}/${encodeURIComponent(membershipId)}/shift`
+  return (await apiPut(path, { windows }, membershipResponseSchema)).membership
+}
+
+export async function updateMembership(
+  barbershopId: string,
+  membershipId: string,
+  patch: UpdateMembershipRequest,
+): Promise<Membership> {
+  const path = `${membershipsPath(barbershopId)}/${encodeURIComponent(membershipId)}`
+  return (await apiPatch(path, patch, membershipResponseSchema)).membership
 }

@@ -1,5 +1,6 @@
 import type { BrazilianState } from '@shavey/contracts'
 import type { Clock } from '../../../shared/clock'
+import type { WeeklyWindow } from '../core/allowed-shift'
 import type { BarbershopCreationPlan } from '../core/barbershop-creation'
 import type {
   InvitationAcceptancePlan,
@@ -61,6 +62,8 @@ export interface ServiceRepository {
 export interface UserDirectory {
   /** E-mail já normalizado em minúsculas pelo contrato. */
   findIdByEmail(email: string): Promise<{ id: string } | null>
+  /** Nomes por id (ex.: barbeiro na lista de vínculos); id sem usuário fica de fora. */
+  findNamesByIds(ids: readonly string[]): Promise<Map<string, string>>
 }
 
 /** Convite visto pelo gerente que acabou de enviá-lo. */
@@ -93,10 +96,44 @@ export interface InvitationRepository {
   accept(plan: InvitationAcceptancePlan): Promise<boolean>
 }
 
+export type MembershipRecord = {
+  id: string
+  userId: string
+  hiredAt: Date
+  isExclusive: boolean
+  acceptsAppointments: boolean
+  isActive: boolean
+  /** Turno permitido, ordenado por dia e início; vazio = sem turno. */
+  shift: WeeklyWindow[]
+}
+
+export type MembershipPatch = Partial<Pick<MembershipRecord, 'acceptsAppointments' | 'isActive'>>
+
+/** Vínculos sempre buscados dentro de uma barbearia: id de outra barbearia não é encontrado. */
+export interface MembershipRepository {
+  listByBarbershop(barbershopId: string): Promise<MembershipRecord[]>
+  findById(barbershopId: string, membershipId: string): Promise<MembershipRecord | null>
+  /** Troca o turno inteiro numa transação. */
+  replaceShift(membershipId: string, windows: WeeklyWindow[]): Promise<void>
+  update(membershipId: string, patch: MembershipPatch): Promise<void>
+  /** Vínculos ativos do barbeiro fora desta barbearia (para a exclusividade). */
+  activeElsewhere(userId: string, barbershopId: string): Promise<{ any: boolean; exclusive: boolean }>
+}
+
+/**
+ * Disponibilidade semanal do barbeiro nesta barbearia (R21). A disponibilidade nasce na #14;
+ * até lá a composição liga "nenhuma disponibilidade" (ver index.ts).
+ */
+export interface AvailabilityReader {
+  weeklyWindows(input: { barbershopId: string; userId: string }): Promise<WeeklyWindow[]>
+}
+
 export type BarbershopPorts = {
   barbershops: BarbershopRepository
   services: ServiceRepository
   invitations: InvitationRepository
+  memberships: MembershipRepository
+  availability: AvailabilityReader
   users: UserDirectory
   clock: Clock
 }
