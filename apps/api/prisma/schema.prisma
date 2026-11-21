@@ -25,6 +25,10 @@ model User {
   updatedAt    DateTime  @updatedAt @map("updated_at") @db.Timestamptz
   sessions     Session[]
 
+  managedBarbershops  BarbershopManager[]
+  barberMemberships   BarberMembership[]  @relation("MembershipBarber")
+  approvedMemberships BarberMembership[]  @relation("MembershipApprover")
+
   @@map("users")
 }
 
@@ -39,4 +43,64 @@ model Session {
 
   @@index([userId])
   @@map("sessions")
+}
+
+// ─── Barbearias (spec 001, R7–R8; ADR-0011, ADR-0018) ───────────────────────
+
+/// Barbearia: nome e endereço estruturado (CEP e UF validados no contrato e por CHECK no banco).
+model Barbershop {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name         String
+  /// Só os 8 dígitos.
+  cep          String
+  street       String
+  number       String
+  complement   String?
+  neighborhood String
+  city         String
+  /// Sigla da UF, em maiúsculas.
+  state        String   @db.Char(2)
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  managers    BarbershopManager[]
+  memberships BarberMembership[]
+
+  @@map("barbershops")
+}
+
+/// Gerência: o usuário é gerente desta barbearia. Uma barbearia pode ter vários gerentes.
+model BarbershopManager {
+  id           String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  barbershopId String     @map("barbershop_id") @db.Uuid
+  barbershop   Barbershop @relation(fields: [barbershopId], references: [id], onDelete: Restrict)
+  userId       String     @map("user_id") @db.Uuid
+  user         User       @relation(fields: [userId], references: [id], onDelete: Restrict)
+  createdAt    DateTime   @default(now()) @map("created_at") @db.Timestamptz
+
+  @@unique([barbershopId, userId])
+  @@index([userId])
+  @@map("barbershop_managers")
+}
+
+/// Vínculo (BarberMembership): relação formal entre barbeiro e barbearia (ODS 8, meta 8.3).
+model BarberMembership {
+  id                  String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  barbershopId        String     @map("barbershop_id") @db.Uuid
+  barbershop          Barbershop @relation(fields: [barbershopId], references: [id], onDelete: Restrict)
+  userId              String     @map("user_id") @db.Uuid
+  user                User       @relation("MembershipBarber", fields: [userId], references: [id], onDelete: Restrict)
+  /// Data de contratação: criação da barbearia ("eu também atendo") ou aceite do convite.
+  hiredAt             DateTime   @map("hired_at") @db.Timestamptz
+  approvedByUserId    String     @map("approved_by_user_id") @db.Uuid
+  approvedBy          User       @relation("MembershipApprover", fields: [approvedByUserId], references: [id], onDelete: Restrict)
+  isExclusive         Boolean    @map("is_exclusive")
+  acceptsAppointments Boolean    @map("accepts_appointments")
+  isActive            Boolean    @map("is_active")
+  createdAt           DateTime   @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt           DateTime   @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@unique([barbershopId, userId])
+  @@index([userId])
+  @@map("barber_memberships")
 }
