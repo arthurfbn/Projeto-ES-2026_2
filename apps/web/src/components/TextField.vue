@@ -9,7 +9,7 @@ const props = defineProps<{
   type?: 'text' | 'email' | 'tel' | 'password'
   autocomplete?: string
   placeholder?: string
-  inputmode?: 'text' | 'email' | 'tel' | 'numeric'
+  inputmode?: 'text' | 'email' | 'tel' | 'numeric' | 'decimal'
   error?: string
   hint?: string
 }>()
