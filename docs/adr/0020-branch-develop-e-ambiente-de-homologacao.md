@@ -8,7 +8,7 @@ O ADR-0009 previa trunk-based: toda fatia entrava direto na `main`, que é produ
 
 ## Decisão
 - **`develop`** é a branch de integração: toda fatia sai dela (`feat/<issue>-<descricao>`) e volta para ela por PR com CI verde (Ship/Show/Ask como no ADR-0009; squash merge).
-- **`main`** é produção: recebe só a `develop` validada, por PR de promoção (`develop → main`, merge commit), no mínimo antes de cada demo semanal.
+- **`main`** é a branch principal (padrão do GitHub) e é produção: recebe a `develop` validada numa **release** (PR `develop → main`, merge commit), no mínimo antes de cada demo semanal.
 - **Correção urgente em produção:** branch `fix/...` a partir da `main`, PR para a `main` e, em seguida, `main` mergeada de volta na `develop`.
 - **Ambientes:**
 
@@ -18,7 +18,9 @@ O ADR-0009 previa trunk-based: toda fatia entrava direto na `main`, que é produ
 | `main` | domínio de produção | ambiente `production` | demo e uso real |
 | PR | preview da Vercel | API da `develop` | conferir a tela da fatia |
 
-- O `vercel.json` escolhe a API pelo domínio acessado (regra `has` por host): o domínio de produção vai para a API de produção; os demais (develop e previews) para a API da `develop`.
+- O `vercel.json` escolhe a API pelo domínio acessado (regra `has` por host, avaliada antes da regra padrão):
+  - `projeto-es-2026-2-*.vercel.app` (domínio da `develop`, `projeto-es-2026-2-develop.vercel.app`, e URLs de preview e de deploy) → API da `develop` (`projeto-es-20262-develop-96aec1f9.up.railway.app`);
+  - qualquer outro host, inclusive o domínio de produção → API de produção (`projeto-es-20262-production.up.railway.app`). Na dúvida, cai na produção.
 - Branches de trabalho continuam curtas (1–2 dias) e a `develop` também fica sempre implantável: quebrou, reverte primeiro.
 
 ## Alternativas
@@ -27,5 +29,5 @@ O ADR-0009 previa trunk-based: toda fatia entrava direto na `main`, que é produ
 
 ## Consequências
 - Dois Postgres e duas APIs no Railway: o consumo do trial praticamente dobra (acompanhar **Usage**; plano B do ADR-0016).
-- Issues com `Closes #n` só fecham sozinhas quando o PR entra na branch padrão; por isso a branch padrão do GitHub passa a ser a `develop`.
+- A `main` segue como branch padrão: PRs de fatia precisam escolher a base `develop` (`gh pr create --base develop`), e `Closes #n` só fecha a issue quando a fatia chega à produção, na release.
 - Métricas DORA de deploy contam as promoções para a `main` (produção); o lead time conta do primeiro commit da fatia até a produção.
