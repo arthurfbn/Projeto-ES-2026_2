@@ -84,7 +84,7 @@ describe('gerente convida para a equipe (R10)', () => {
   it('CA9: convida barbeiro com vínculo exclusivo e vê a confirmação', async () => {
     const calls = managerApi(sentBarber)
     const { wrapper } = await renderRoute(`/barbearias/${shopId}`)
-    await waitUntil(() => wrapper.text().includes('Equipe'))
+    await waitUntil(() => wrapper.text().includes('Enviar convite'))
 
     await input(wrapper, 'E-mail de quem você quer convidar').setValue('Leo@Exemplo.com')
     await input(wrapper, 'Vínculo exclusivo').setValue(true)
@@ -113,7 +113,7 @@ describe('gerente convida para a equipe (R10)', () => {
       ),
     )
     const { wrapper } = await renderRoute(`/barbearias/${shopId}`)
-    await waitUntil(() => wrapper.text().includes('Equipe'))
+    await waitUntil(() => wrapper.text().includes('Enviar convite'))
 
     await input(wrapper, 'E-mail de quem você quer convidar').setValue('ana@exemplo.com')
     await input(wrapper, 'Vínculo exclusivo').setValue(true)
@@ -138,7 +138,7 @@ describe('gerente convida para a equipe (R10)', () => {
       ),
     )
     const { wrapper } = await renderRoute(`/barbearias/${shopId}`)
-    await waitUntil(() => wrapper.text().includes('Equipe'))
+    await waitUntil(() => wrapper.text().includes('Enviar convite'))
 
     await input(wrapper, 'E-mail de quem você quer convidar').setValue('ninguem@exemplo.com')
     await wrapper.get('form[aria-label="Convidar para a equipe"]').trigger('submit')
@@ -150,7 +150,7 @@ describe('gerente convida para a equipe (R10)', () => {
   it('e-mail inválido dá erro no campo, sem chamar a API', async () => {
     const calls = managerApi(sentBarber)
     const { wrapper } = await renderRoute(`/barbearias/${shopId}`)
-    await waitUntil(() => wrapper.text().includes('Equipe'))
+    await waitUntil(() => wrapper.text().includes('Enviar convite'))
 
     await input(wrapper, 'E-mail de quem você quer convidar').setValue('nao-e-email')
     await wrapper.get('form[aria-label="Convidar para a equipe"]').trigger('submit')
@@ -168,7 +168,7 @@ describe('gerente convida para a equipe (R10)', () => {
     const { wrapper } = await renderRoute(`/barbearias/${shopId}`)
     await waitUntil(() => wrapper.text().includes('Barbearia do Zé'))
 
-    expect(wrapper.text()).not.toContain('Equipe')
+    expect(wrapper.text()).not.toContain('Enviar convite')
   })
 })
 

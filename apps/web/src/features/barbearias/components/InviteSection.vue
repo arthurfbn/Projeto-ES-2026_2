@@ -51,7 +51,7 @@ async function submit() {
         id="invite-title"
         class="font-display text-2xl font-extrabold"
       >
-        Equipe
+        Convites
       </h2>
       <p class="text-sm text-muted-foreground">
         Convide quem já tem conta no Shavey. A pessoa entra na equipe quando aceitar.
