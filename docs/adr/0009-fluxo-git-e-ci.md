@@ -1,6 +1,6 @@
 # 0009 — Fluxo Git (trunk-based) e CI/CD
 
-- **Status:** aceito
+- **Status:** aceito; o fluxo de branches (trunk-based na `main`) foi substituído pelo [ADR-0020](0020-branch-develop-e-ambiente-de-homologacao.md) — o resto continua valendo
 - **Data:** 2026-11-15
 
 ## Contexto
