@@ -31,7 +31,27 @@ export interface BarbershopRepository {
   findRoles(barbershopId: string, userId: string): Promise<BarbershopRoles>
 }
 
+export type ServiceRecord = {
+  id: string
+  name: string
+  priceCents: number
+  durationMinutes: number
+  isActive: boolean
+}
+
+export type NewService = Omit<ServiceRecord, 'id' | 'isActive'>
+export type ServicePatch = Partial<Omit<ServiceRecord, 'id'>>
+
+/** Serviços sempre buscados dentro de uma barbearia: id de outra barbearia não é encontrado. */
+export interface ServiceRepository {
+  listByBarbershop(barbershopId: string): Promise<ServiceRecord[]>
+  findById(barbershopId: string, serviceId: string): Promise<ServiceRecord | null>
+  create(barbershopId: string, service: NewService): Promise<ServiceRecord>
+  update(barbershopId: string, serviceId: string, patch: ServicePatch): Promise<ServiceRecord>
+}
+
 export type BarbershopPorts = {
   barbershops: BarbershopRepository
+  services: ServiceRepository
   clock: Clock
 }

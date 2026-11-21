@@ -4,6 +4,7 @@ import { useRoute } from 'vue-router'
 import AppHeader from '@/components/AppHeader.vue'
 import { ApiError } from '@/lib/http'
 import { formatCep } from '@/lib/masks'
+import ServicesSection from '../components/ServicesSection.vue'
 import { useBarbershop } from '../queries'
 
 const route = useRoute()
@@ -84,6 +85,11 @@ const notFound = computed(() => error.value instanceof ApiError && error.value.s
           <span>CEP {{ formatCep(data.barbershop.cep) }}</span>
         </address>
       </section>
+
+      <ServicesSection
+        v-if="data?.roles.manager"
+        :barbershop-id="barbershopId"
+      />
     </main>
   </div>
 </template>
