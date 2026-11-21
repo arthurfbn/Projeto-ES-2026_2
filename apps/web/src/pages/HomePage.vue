@@ -1,23 +1,16 @@
 <script setup lang="ts">
+import BrandMark from '@/components/BrandMark.vue'
+import AccountPanel from '@/features/conta/components/AccountPanel.vue'
 import HealthStatus from '@/features/sistema/HealthStatus.vue'
 </script>
 
 <template>
-  <main class="mx-auto flex min-h-dvh max-w-xl flex-col gap-8 px-5 py-12">
-    <header class="flex items-center gap-3">
-      <img
-        src="/favicon.svg"
-        alt=""
-        width="44"
-        height="60"
-      >
-      <h1 class="text-5xl font-extrabold leading-none">
-        shave<span class="text-pole-red">y</span>
-      </h1>
-    </header>
-    <p class="text-xl font-display font-semibold">
+  <main class="mx-auto flex min-h-dvh max-w-xl flex-col gap-8 px-4 py-12">
+    <BrandMark />
+    <p class="font-display text-xl font-semibold">
       Passa a máquina na fila.
     </p>
+    <AccountPanel />
     <HealthStatus />
   </main>
 </template>
