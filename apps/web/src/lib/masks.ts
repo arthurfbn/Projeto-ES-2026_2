@@ -25,6 +25,14 @@ export function formatPhone(raw: string): string {
 
 export const phoneMask: DigitMask = { format: formatPhone }
 
+/** 01310-100: hífen depois do 5º dígito; no máximo 8 dígitos. */
+export function formatCep(raw: string): string {
+  const digits = raw.replace(/\D/g, '').slice(0, 8)
+  return digits.length <= 5 ? digits : `${digits.slice(0, 5)}-${digits.slice(5)}`
+}
+
+export const cepMask: DigitMask = { format: formatCep }
+
 export const countDigits = (text: string) => text.replace(/\D/g, '').length
 
 /** Posição no texto logo depois do n-ésimo dígito (0 = início). */

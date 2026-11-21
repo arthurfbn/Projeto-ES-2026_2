@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatPhone, positionAfterDigits, removeDigitAt } from './masks'
+import { formatCep, formatPhone, positionAfterDigits, removeDigitAt } from './masks'
 
 describe('máscara de telefone', () => {
   it.each([
@@ -40,5 +40,19 @@ describe('apoio ao cursor', () => {
 
   it('remove o n-ésimo dígito', () => {
     expect(removeDigitAt('(11) 98765-4321', 2)).toBe('(1) 98765-4321')
+  })
+})
+
+describe('máscara de CEP', () => {
+  it.each([
+    ['', ''],
+    ['0131', '0131'],
+    ['01310', '01310'],
+    ['013101', '01310-1'],
+    ['01310100', '01310-100'],
+    ['01310-1009', '01310-100'],
+    ['ab01.310-100', '01310-100'],
+  ])('formata "%s" como "%s"', (raw, expected) => {
+    expect(formatCep(raw)).toBe(expected)
   })
 })

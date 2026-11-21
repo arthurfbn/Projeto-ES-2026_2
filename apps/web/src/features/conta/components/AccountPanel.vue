@@ -40,6 +40,12 @@ const logout = useLogout()
       <h2 class="text-2xl font-extrabold">
         Olá, {{ me.user.name }}
       </h2>
+      <RouterLink
+        :to="{ name: 'create-barbershop' }"
+        class="flex h-13 items-center justify-center rounded-md bg-primary px-4 font-display text-lg font-extrabold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+      >
+        Criar barbearia
+      </RouterLink>
       <button
         type="button"
         class="h-11 self-start rounded-md border px-4 font-semibold disabled:opacity-60"
