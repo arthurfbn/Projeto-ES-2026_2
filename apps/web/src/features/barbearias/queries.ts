@@ -1,8 +1,23 @@
 import { computed, toValue, type MaybeRefOrGetter } from 'vue'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
-import type { CreateBarbershopRequest, CreateServiceRequest, UpdateServiceRequest } from '@shavey/contracts'
+import type {
+  CreateBarbershopRequest,
+  CreateInvitationRequest,
+  CreateServiceRequest,
+  UpdateServiceRequest,
+} from '@shavey/contracts'
+import { meQueryKey } from '@/features/conta/queries'
 import { ApiError } from '@/lib/http'
-import { createBarbershop, createService, fetchBarbershop, fetchServices, updateService } from './api'
+import {
+  acceptInvitation,
+  createBarbershop,
+  createService,
+  fetchBarbershop,
+  fetchReceivedInvitations,
+  fetchServices,
+  inviteToBarbershop,
+  updateService,
+} from './api'
 
 export const barbershopQueryKey = (barbershopId: string) => ['barbershops', barbershopId] as const
 
@@ -39,6 +54,39 @@ export function useCreateService(barbershopId: MaybeRefOrGetter<string>) {
   return useMutation({
     mutationFn: (input: CreateServiceRequest) => createService(toValue(barbershopId), input),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: servicesQueryKey(toValue(barbershopId)) }),
+  })
+}
+
+/** R10: gerente convida por e-mail. Sem lista de enviados nesta fatia (cancelar entra na #11). */
+export function useInviteToBarbershop(barbershopId: MaybeRefOrGetter<string>) {
+  return useMutation({
+    mutationFn: (input: CreateInvitationRequest) => inviteToBarbershop(toValue(barbershopId), input),
+  })
+}
+
+export const receivedInvitationsQueryKey = ['invitations', 'received'] as const
+
+/** Convites pendentes de quem está logado (ADR-0018: vê ao entrar). Só consulta com sessão. */
+export function useReceivedInvitations(enabled: MaybeRefOrGetter<boolean>) {
+  return useQuery({
+    queryKey: receivedInvitationsQueryKey,
+    queryFn: ({ signal }) => fetchReceivedInvitations(signal),
+    enabled: computed(() => toValue(enabled)),
+  })
+}
+
+export function useAcceptInvitation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (invitationId: string) => acceptInvitation(invitationId),
+    onSuccess: async (accepted) => {
+      // Novo perfil: a lista de convites, a barbearia e os perfis do /me mudam.
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: receivedInvitationsQueryKey }),
+        queryClient.invalidateQueries({ queryKey: barbershopQueryKey(accepted.barbershopId) }),
+        queryClient.invalidateQueries({ queryKey: meQueryKey }),
+      ])
+    },
   })
 }
 
