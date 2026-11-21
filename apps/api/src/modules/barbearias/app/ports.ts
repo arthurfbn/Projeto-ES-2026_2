@@ -1,5 +1,6 @@
 import type { BrazilianState } from '@shavey/contracts'
 import type { Clock } from '../../../shared/clock'
+import type { WeeklyWindow } from '../core/allowed-shift'
 import type { BarbershopCreationPlan } from '../core/barbershop-creation'
 
 export type BarbershopRecord = {
@@ -50,8 +51,46 @@ export interface ServiceRepository {
   update(barbershopId: string, serviceId: string, patch: ServicePatch): Promise<ServiceRecord>
 }
 
+export type MembershipRecord = {
+  id: string
+  userId: string
+  hiredAt: Date
+  isExclusive: boolean
+  acceptsAppointments: boolean
+  isActive: boolean
+  /** Turno permitido, ordenado por dia e início; vazio = sem turno. */
+  shift: WeeklyWindow[]
+}
+
+export type MembershipPatch = Partial<Pick<MembershipRecord, 'acceptsAppointments' | 'isActive'>>
+
+/** Vínculos sempre buscados dentro de uma barbearia: id de outra barbearia não é encontrado. */
+export interface MembershipRepository {
+  listByBarbershop(barbershopId: string): Promise<MembershipRecord[]>
+  findById(barbershopId: string, membershipId: string): Promise<MembershipRecord | null>
+  /** Troca o turno inteiro numa transação. */
+  replaceShift(membershipId: string, windows: WeeklyWindow[]): Promise<void>
+  update(membershipId: string, patch: MembershipPatch): Promise<void>
+  /** Vínculos ativos do barbeiro fora desta barbearia (para a exclusividade). */
+  activeElsewhere(userId: string, barbershopId: string): Promise<{ any: boolean; exclusive: boolean }>
+}
+
+/**
+ * Disponibilidade semanal do barbeiro nesta barbearia (R21). A disponibilidade nasce na #14;
+ * até lá a composição liga "nenhuma disponibilidade" (ver index.ts).
+ */
+export interface AvailabilityReader {
+  weeklyWindows(input: { barbershopId: string; userId: string }): Promise<WeeklyWindow[]>
+}
+
+/** Nomes por id, vindos do módulo identidade (barbearias não lê a tabela users). */
+export type FindUserNames = (ids: readonly string[]) => Promise<Map<string, string>>
+
 export type BarbershopPorts = {
   barbershops: BarbershopRepository
   services: ServiceRepository
+  memberships: MembershipRepository
+  availability: AvailabilityReader
+  findUserNames: FindUserNames
   clock: Clock
 }

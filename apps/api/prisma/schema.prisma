@@ -86,20 +86,21 @@ model BarbershopManager {
 
 /// Vínculo (BarberMembership): relação formal entre barbeiro e barbearia (ODS 8, meta 8.3).
 model BarberMembership {
-  id                  String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  barbershopId        String     @map("barbershop_id") @db.Uuid
-  barbershop          Barbershop @relation(fields: [barbershopId], references: [id], onDelete: Restrict)
-  userId              String     @map("user_id") @db.Uuid
-  user                User       @relation("MembershipBarber", fields: [userId], references: [id], onDelete: Restrict)
+  id                  String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  barbershopId        String         @map("barbershop_id") @db.Uuid
+  barbershop          Barbershop     @relation(fields: [barbershopId], references: [id], onDelete: Restrict)
+  userId              String         @map("user_id") @db.Uuid
+  user                User           @relation("MembershipBarber", fields: [userId], references: [id], onDelete: Restrict)
   /// Data de contratação: criação da barbearia ("eu também atendo") ou aceite do convite.
-  hiredAt             DateTime   @map("hired_at") @db.Timestamptz
-  approvedByUserId    String     @map("approved_by_user_id") @db.Uuid
-  approvedBy          User       @relation("MembershipApprover", fields: [approvedByUserId], references: [id], onDelete: Restrict)
-  isExclusive         Boolean    @map("is_exclusive")
-  acceptsAppointments Boolean    @map("accepts_appointments")
-  isActive            Boolean    @map("is_active")
-  createdAt           DateTime   @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt           DateTime   @updatedAt @map("updated_at") @db.Timestamptz
+  hiredAt             DateTime       @map("hired_at") @db.Timestamptz
+  approvedByUserId    String         @map("approved_by_user_id") @db.Uuid
+  approvedBy          User           @relation("MembershipApprover", fields: [approvedByUserId], references: [id], onDelete: Restrict)
+  isExclusive         Boolean        @map("is_exclusive")
+  acceptsAppointments Boolean        @map("accepts_appointments")
+  isActive            Boolean        @map("is_active")
+  createdAt           DateTime       @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt           DateTime       @updatedAt @map("updated_at") @db.Timestamptz
+  allowedShifts       AllowedShift[]
 
   @@unique([barbershopId, userId])
   @@index([userId])
@@ -120,4 +121,19 @@ model Service {
 
   @@index([barbershopId])
   @@map("services")
+}
+
+/// Turno permitido (R15; ADR-0019): janela semanal opcional do vínculo. Sem linhas = sem turno.
+/// Dia 0 = domingo … 6 = sábado; minutos do dia em hora de São Paulo, de 15 em 15.
+/// Sem sobreposição no mesmo dia: constraint EXCLUDE na migration.
+model AllowedShift {
+  id           String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  membershipId String           @map("membership_id") @db.Uuid
+  membership   BarberMembership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  weekday      Int              @db.SmallInt
+  startMinute  Int              @map("start_minute") @db.SmallInt
+  endMinute    Int              @map("end_minute") @db.SmallInt
+
+  @@index([membershipId])
+  @@map("allowed_shifts")
 }

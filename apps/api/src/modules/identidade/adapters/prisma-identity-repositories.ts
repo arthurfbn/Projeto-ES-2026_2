@@ -11,6 +11,7 @@ export function createPrismaUserRepository(db: Db): UserRepository {
   return {
     findByEmail: (email) => db.user.findUnique({ where: { email }, select: userFields }),
     findById: (id) => db.user.findUnique({ where: { id }, select: userFields }),
+    findNamesByIds: (ids) => db.user.findMany({ where: { id: { in: [...ids] } }, select: { id: true, name: true } }),
     async create(user) {
       try {
         return ok(await db.user.create({ data: user, select: userFields }))

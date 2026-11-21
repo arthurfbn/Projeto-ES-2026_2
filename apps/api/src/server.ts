@@ -43,7 +43,15 @@ const app = await buildApp({
   version: config.version,
   logger,
   allowedOrigins: config.webOrigins,
-  modules: [identity, createBarbershopsModule({ db, clock: systemClock, requireUser: identity.requireUser })],
+  modules: [
+    identity,
+    createBarbershopsModule({
+      db,
+      clock: systemClock,
+      requireUser: identity.requireUser,
+      findUserNames: identity.findUserNames,
+    }),
+  ],
 })
 
 async function shutdown(signal: string) {

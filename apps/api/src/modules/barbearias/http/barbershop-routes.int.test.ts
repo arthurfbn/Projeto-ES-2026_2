@@ -19,7 +19,10 @@ async function makeApp() {
     probe: { isUp: async () => true },
     errorReporter: { capture() {}, async flush() {} },
     version: 'test',
-    modules: [identity, createBarbershopsModule({ db, clock, requireUser: identity.requireUser })],
+    modules: [
+      identity,
+      createBarbershopsModule({ db, clock, requireUser: identity.requireUser, findUserNames: identity.findUserNames }),
+    ],
   })
 }
 
