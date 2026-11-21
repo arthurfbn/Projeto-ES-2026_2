@@ -9,3 +9,34 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+// ─── Identidade (spec 001, R1–R4; ADR-0006, ADR-0011) ───────────────────────
+
+/// Usuário: conta única; perfis por barbearia ficam em outras tabelas (sem papel global).
+model User {
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name         String
+  /// Sempre em minúsculas (CHECK no banco): unicidade sem diferenciar caixa.
+  email        String    @unique
+  /// Só dígitos, DDD + 8 ou 9 (CHECK no banco). Pode repetir entre usuários.
+  phone        String
+  passwordHash String    @map("password_hash")
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+  sessions     Session[]
+
+  @@map("users")
+}
+
+/// Sessão opaca: o cookie guarda o token; o banco guarda só o hash SHA-256 dele.
+model Session {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tokenHash String   @unique @map("token_hash")
+  userId    String   @map("user_id") @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime @map("expires_at") @db.Timestamptz
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([userId])
+  @@map("sessions")
+}

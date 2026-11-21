@@ -1,4 +1,6 @@
 import { buildApp } from './app'
+import { createIdentityModule } from './modules/identidade'
+import { systemClock } from './shared/clock'
 import { loadConfig } from './shared/config'
 import { createDb } from './shared/db/prisma'
 import { createPrismaDatabaseProbe } from './shared/db/prisma-database-probe'
@@ -37,6 +39,8 @@ const app = await buildApp({
   errorReporter,
   version: config.version,
   logger,
+  allowedOrigins: config.webOrigins,
+  modules: [createIdentityModule({ db, clock: systemClock })],
 })
 
 async function shutdown(signal: string) {
