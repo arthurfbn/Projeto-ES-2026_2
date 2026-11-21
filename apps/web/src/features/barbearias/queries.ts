@@ -1,8 +1,23 @@
 import { computed, toValue, type MaybeRefOrGetter } from 'vue'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
-import type { CreateBarbershopRequest, CreateServiceRequest, UpdateServiceRequest } from '@shavey/contracts'
+import type {
+  CreateBarbershopRequest,
+  CreateServiceRequest,
+  UpdateMembershipRequest,
+  UpdateServiceRequest,
+  WeeklyWindow,
+} from '@shavey/contracts'
 import { ApiError } from '@/lib/http'
-import { createBarbershop, createService, fetchBarbershop, fetchServices, updateService } from './api'
+import {
+  createBarbershop,
+  createService,
+  fetchBarbershop,
+  fetchMemberships,
+  fetchServices,
+  updateMembership,
+  updateService,
+  updateShift,
+} from './api'
 
 export const barbershopQueryKey = (barbershopId: string) => ['barbershops', barbershopId] as const
 
@@ -48,5 +63,33 @@ export function useUpdateService(barbershopId: MaybeRefOrGetter<string>) {
     mutationFn: ({ serviceId, patch }: { serviceId: string; patch: UpdateServiceRequest }) =>
       updateService(toValue(barbershopId), serviceId, patch),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: servicesQueryKey(toValue(barbershopId)) }),
+  })
+}
+
+export const membershipsQueryKey = (barbershopId: string) => ['barbershops', barbershopId, 'memberships'] as const
+
+/** Vínculos da barbearia com o turno (visão do gerente). */
+export function useMemberships(barbershopId: MaybeRefOrGetter<string>) {
+  return useQuery({
+    queryKey: computed(() => membershipsQueryKey(toValue(barbershopId))),
+    queryFn: ({ signal }) => fetchMemberships(toValue(barbershopId), signal),
+  })
+}
+
+export function useUpdateShift(barbershopId: MaybeRefOrGetter<string>) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ membershipId, windows }: { membershipId: string; windows: WeeklyWindow[] }) =>
+      updateShift(toValue(barbershopId), membershipId, windows),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: membershipsQueryKey(toValue(barbershopId)) }),
+  })
+}
+
+export function useUpdateMembership(barbershopId: MaybeRefOrGetter<string>) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ membershipId, patch }: { membershipId: string; patch: UpdateMembershipRequest }) =>
+      updateMembership(toValue(barbershopId), membershipId, patch),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: membershipsQueryKey(toValue(barbershopId)) }),
   })
 }
