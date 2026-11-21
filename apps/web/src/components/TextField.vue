@@ -12,6 +12,10 @@ const props = defineProps<{
   inputmode?: 'text' | 'email' | 'tel' | 'numeric' | 'decimal'
   error?: string
   hint?: string
+  /** Preenchido pelo sistema (ex.: endereço do CEP): visível e focável, mas não editável. */
+  readonly?: boolean
+  /** Busca em andamento ligada ao campo (ex.: CEP): mostra indicador e marca aria-busy. */
+  busy?: boolean
 }>()
 
 const emit = defineEmits<{ blur: [] }>()
@@ -66,11 +70,20 @@ function onInput(event: Event) {
         :inputmode="inputmode"
         :aria-invalid="error ? 'true' : undefined"
         :aria-describedby="messageId"
-        class="h-12 w-full rounded-md border bg-card px-3 text-foreground placeholder:text-muted-foreground/70 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ring"
-        :class="[error ? 'border-destructive' : 'border-input', isPassword ? 'pr-12' : '']"
+        :aria-busy="busy ? 'true' : undefined"
+        :readonly="readonly"
+        class="h-12 w-full rounded-md border bg-card px-3 text-foreground placeholder:text-muted-foreground/70 read-only:bg-muted focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ring"
+        :class="[error ? 'border-destructive' : 'border-input', isPassword || busy ? 'pr-12' : '']"
         @input="onInput"
         @blur="emit('blur')"
       >
+      <span
+        v-if="busy"
+        class="pointer-events-none absolute inset-y-0 right-0 flex w-12 items-center justify-center text-muted-foreground"
+        aria-hidden="true"
+      >
+        <span class="size-5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+      </span>
       <button
         v-if="isPassword"
         type="button"

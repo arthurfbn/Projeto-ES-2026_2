@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive, useId } from 'vue'
+import { computed, reactive, useId } from 'vue'
 import { useRouter } from 'vue-router'
 import { createBarbershopRequestSchema } from '@shavey/contracts'
 import AppHeader from '@/components/AppHeader.vue'
@@ -7,6 +7,7 @@ import TextField from '@/components/TextField.vue'
 import { useFormErrors } from '@/features/conta/form-errors'
 import { cepMask } from '@/lib/masks'
 import { useCreateBarbershop } from '../queries'
+import { useCepAutofill } from '../use-cep-autofill'
 
 const router = useRouter()
 const create = useCreateBarbershop()
@@ -25,6 +26,14 @@ const form = reactive({
 })
 // Mesmo contrato da API: CEP e UF errados aparecem no campo sem ida ao servidor (CA6).
 const { errors, validateAll, setFromRequest, clearIfValid } = useFormErrors(createBarbershopRequestSchema)
+
+// Endereço pelo CEP (#21): só ajuda de preenchimento; a validação continua a mesma.
+const cep = useCepAutofill(form, (fields) => fields.forEach((field) => clearIfValid(field, form[field])))
+const cepNotice = computed(() => {
+  if (cep.status.value === 'not_found') return 'CEP não encontrado. Preencha o endereço abaixo.'
+  if (cep.status.value === 'failed') return 'Não foi possível buscar o CEP agora. Preencha o endereço abaixo.'
+  return undefined
+})
 
 async function submit() {
   if (!validateAll(form)) return
@@ -69,11 +78,14 @@ async function submit() {
           autocomplete="postal-code"
           placeholder="01310-100"
           :mask="cepMask"
-          :error="errors.fields.cep"
+          :busy="cep.loading.value"
+          :hint="cep.loading.value ? 'Buscando endereço…' : 'O endereço é preenchido pelo CEP.'"
+          :error="errors.fields.cep ?? cepNotice"
           @blur="clearIfValid('cep', form.cep)"
         />
         <TextField
           v-model="form.street"
+          :readonly="cep.isLocked('street')"
           label="Rua"
           autocomplete="address-line1"
           :error="errors.fields.street"
@@ -97,6 +109,7 @@ async function submit() {
         </div>
         <TextField
           v-model="form.neighborhood"
+          :readonly="cep.isLocked('neighborhood')"
           label="Bairro"
           :error="errors.fields.neighborhood"
           @blur="clearIfValid('neighborhood', form.neighborhood)"
@@ -104,6 +117,7 @@ async function submit() {
         <div class="grid grid-cols-[1fr_6rem] gap-4">
           <TextField
             v-model="form.city"
+            :readonly="cep.isLocked('city')"
             label="Cidade"
             autocomplete="address-level2"
             :error="errors.fields.city"
@@ -111,6 +125,7 @@ async function submit() {
           />
           <TextField
             v-model="form.state"
+            :readonly="cep.isLocked('state')"
             label="UF"
             autocomplete="address-level1"
             placeholder="SP"
