@@ -8,7 +8,7 @@ O ADR-0009 previa trunk-based: toda fatia entrava direto na `main`, que é produ
 
 ## Decisão
 - **`develop`** é a branch de integração: toda fatia sai dela (`feat/<issue>-<descricao>`) e volta para ela por PR com CI verde (Ship/Show/Ask como no ADR-0009; squash merge).
-- **`main`** é produção: recebe só a `develop` validada, por PR de promoção (`develop → main`, merge commit), no mínimo antes de cada demo semanal.
+- **`main`** é a branch principal (padrão do GitHub) e é produção: recebe a `develop` validada numa **release** (PR `develop → main`, merge commit), no mínimo antes de cada demo semanal.
 - **Correção urgente em produção:** branch `fix/...` a partir da `main`, PR para a `main` e, em seguida, `main` mergeada de volta na `develop`.
 - **Ambientes:**
 
@@ -27,5 +27,5 @@ O ADR-0009 previa trunk-based: toda fatia entrava direto na `main`, que é produ
 
 ## Consequências
 - Dois Postgres e duas APIs no Railway: o consumo do trial praticamente dobra (acompanhar **Usage**; plano B do ADR-0016).
-- Issues com `Closes #n` só fecham sozinhas quando o PR entra na branch padrão; por isso a branch padrão do GitHub passa a ser a `develop`.
+- A `main` segue como branch padrão: PRs de fatia precisam escolher a base `develop` (`gh pr create --base develop`), e `Closes #n` só fecha a issue quando a fatia chega à produção, na release.
 - Métricas DORA de deploy contam as promoções para a `main` (produção); o lead time conta do primeiro commit da fatia até a produção.
