@@ -1,6 +1,13 @@
 import type { BrazilianState } from '@shavey/contracts'
 import type { Clock } from '../../../shared/clock'
 import type { BarbershopCreationPlan } from '../core/barbershop-creation'
+import type {
+  InvitationAcceptancePlan,
+  InvitationKind,
+  InvitationStatus,
+  NewInvitation,
+  PendingInvitation,
+} from '../core/invitation'
 
 export type BarbershopRecord = {
   id: string
@@ -50,8 +57,46 @@ export interface ServiceRepository {
   update(barbershopId: string, serviceId: string, patch: ServicePatch): Promise<ServiceRecord>
 }
 
+/** Implementada pelo módulo identidade (dono da tabela `users`), injetada na composição. */
+export interface UserDirectory {
+  /** E-mail já normalizado em minúsculas pelo contrato. */
+  findIdByEmail(email: string): Promise<{ id: string } | null>
+}
+
+/** Convite visto pelo gerente que acabou de enviá-lo. */
+export type SentInvitationRecord = {
+  id: string
+  kind: InvitationKind
+  isExclusive: boolean
+  status: InvitationStatus
+  expiresAt: Date
+}
+
+/** Convite pendente visto pelo convidado. */
+export type ReceivedInvitationRecord = {
+  id: string
+  barbershopId: string
+  barbershopName: string
+  kind: InvitationKind
+  isExclusive: boolean
+  expiresAt: Date
+}
+
+export interface InvitationRepository {
+  create(invitation: NewInvitation): Promise<SentInvitationRecord>
+  findById(invitationId: string): Promise<PendingInvitation | null>
+  listPendingForInvitee(userId: string): Promise<ReceivedInvitationRecord[]>
+  /**
+   * Marca o convite como aceito e cria a gerência ou o vínculo, numa transação.
+   * Devolve false (sem gravar nada) se o convite deixou de estar pendente no meio do caminho.
+   */
+  accept(plan: InvitationAcceptancePlan): Promise<boolean>
+}
+
 export type BarbershopPorts = {
   barbershops: BarbershopRepository
   services: ServiceRepository
+  invitations: InvitationRepository
+  users: UserDirectory
   clock: Clock
 }

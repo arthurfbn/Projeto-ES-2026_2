@@ -22,6 +22,14 @@ export function createPrismaUserRepository(db: Db): UserRepository {
   }
 }
 
+/** Consulta para outros módulos: só o id do usuário dono do e-mail (já normalizado em minúsculas). */
+export function createPrismaUserDirectory(db: Db) {
+  return {
+    findIdByEmail: (email: string): Promise<{ id: string } | null> =>
+      db.user.findUnique({ where: { email }, select: { id: true } }),
+  }
+}
+
 export function createPrismaSessionRepository(db: Db): SessionRepository {
   return {
     async create(session) {
