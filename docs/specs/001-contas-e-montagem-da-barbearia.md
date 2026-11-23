@@ -66,7 +66,7 @@ Usuário, Perfil, Visão, Cliente, Barbeiro, Gerente, Barbearia, Convite, Víncu
 - CA18 (R21) Given turno seg 09:00–18:00 e disponibilidade seg 16:00–18:00, When o gerente muda o turno para seg 09:00–15:00, Then erro e o turno continua o mesmo.
 
 ## Fora de escopo
-Recuperação de senha, verificação de e-mail, login social, notificações por e-mail, busca de endereço por CEP (preenchimento manual), foto/logo da barbearia, sair de uma barbearia ou excluir barbearia, remover gerente, transferir convite, regras de comissão (semana 2), horários livres e agendamento (semana 2), painel geral, avisos, diária, fechamento de agenda e remarcação (semanas 2–3, ADR-0019), retirar exclusividade e permitir diárias num vínculo exclusivo.
+Recuperação de senha, verificação de e-mail, login social, notificações por e-mail, busca de endereço por CEP (entrou depois, na #21; endereço e nome seguem na spec 002), foto/logo da barbearia, sair de uma barbearia ou excluir barbearia, remover gerente, transferir convite, regras de comissão (semana 2), horários livres e agendamento (semana 2), painel geral, avisos, diária, fechamento de agenda e remarcação (semanas 2–3, ADR-0019), retirar exclusividade e permitir diárias num vínculo exclusivo.
 
 ## Interface
 - O slogan "Passa a máquina na fila." aparece na tela de cadastro (`docs/design-system.md`).
