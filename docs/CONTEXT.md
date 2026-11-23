@@ -33,8 +33,15 @@ _Evitar_: dono, admin, proprietário, recepcionista (não existe)
 ### Barbearia e equipe
 
 **Barbearia** (Barbershop)
-Estabelecimento onde barbeiros atendem. Toda informação de negócio pertence a uma barbearia. Tem nome e **endereço estruturado** (CEP, rua, número, complemento opcional, bairro, cidade, UF). Ao criá-la, o criador pode marcar **"eu também atendo"**, o que cria também o vínculo de barbeiro dele.
+Estabelecimento onde barbeiros atendem. Toda informação de negócio pertence a uma barbearia. Tem nome e **endereço estruturado** (CEP, logradouro, número, complemento opcional, bairro, cidade, UF). Ao criá-la, o criador pode marcar **"eu também atendo"**, o que cria também o vínculo de barbeiro dele. O nome não é único: se já existir outra barbearia com o **mesmo nome** (ignorando maiúsculas, acentos e espaços), o sistema avisa e pede confirmação, sem impedir.
 _Evitar_: loja, salão, estabelecimento
+
+**Logradouro** (addressLine)
+Rua, avenida, travessa etc. do endereço da barbearia, sem o número. Pode ser sugerido pelo ViaCEP depois de escolhidas UF e cidade (ADR-0021).
+_Evitar_: rua (no código, `street` está em remoção)
+
+**Cidade e UF** (city, state)
+UF é uma das 27 siglas; cidade é um município do IBGE **daquela UF**, gravado com o nome oficial. Texto fora da lista não é aceito (ADR-0021).
 
 **Convite** (Invitation)
 Proposta feita por um gerente para que um usuário **já cadastrado** (identificado pelo e-mail) entre na barbearia como **barbeiro** (vínculo), **gerente** ou para uma **diária**. Estados: `pendente` → `aceito` (cria o vínculo, a gerência ou a diária), `recusado`, `cancelado` (pelo gerente) ou `expirado` (7 dias sem resposta; convite de diária expira também no início do período, o que vier antes). Nada existe antes do aceite: o barbeiro concorda com a relação de trabalho (ODS 8). O convidado recebe um **aviso** no sistema (sem e-mail no MVP).
@@ -171,8 +178,12 @@ Do barbeiro: faturamento gerado, comissão, gorjetas, margem, ticket médio, mé
 ### Avisos
 
 **Aviso** (Notice)
-Mensagem dentro do sistema para um usuário (convite recebido, cancelamento na barbearia que gerencia), com indicação de não lidos. Sem e-mail ou push no MVP (ADR-0010).
+Mensagem dentro do sistema para um usuário (convite recebido, cancelamento na barbearia que gerencia, mudança de nome ou de endereço da barbearia em que tem agendamento futuro), com indicação de não lidos. Sem e-mail ou push no MVP (ADR-0010).
 _Evitar_: notificação, alerta
+
+**Assinatura** (Subscription) — fora do MVP
+Plano recorrente que o cliente paga à barbearia por um pacote de atendimentos (ex.: cortes ilimitados ou N por mês). "Em aberto" = assinatura ativa. Registrado só para os avisos de mudança da barbearia; não vira código no MVP.
+_Evitar_: plano, mensalidade, clube
 
 ### Avaliação
 
