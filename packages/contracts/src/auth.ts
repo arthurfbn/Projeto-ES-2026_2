@@ -47,8 +47,25 @@ export const userSchema = z.object({
   phone: z.string(),
 })
 
-/** GET /me, POST /auth/signup e POST /auth/login. Perfis por barbearia entram na #8. */
-export const meResponseSchema = z.object({ user: userSchema })
+/** Cartão de "Minhas barbearias": onde o usuário é gerente (ADR-0022). */
+export const managedBarbershopSchema = z.object({ id: z.uuid(), name: z.string() })
+
+/** Cartão de "Meus vínculos": vínculo de barbeiro ativo do usuário (ADR-0022). */
+export const membershipSummarySchema = z.object({
+  id: z.uuid(),
+  barbershopId: z.uuid(),
+  barbershopName: z.string(),
+})
+
+/**
+ * GET /me, POST /auth/signup e POST /auth/login (R5): o usuário e o que o Início mostra.
+ * Cliente é implícito; gerência e vínculo vêm separados porque abrem telas diferentes.
+ */
+export const meResponseSchema = z.object({
+  user: userSchema,
+  managedBarbershops: z.array(managedBarbershopSchema),
+  memberships: z.array(membershipSummarySchema),
+})
 
 /** Corpo de erro padrão da API: código estável + mensagem para o usuário + erros por campo. */
 export const apiErrorSchema = z.object({
@@ -66,6 +83,8 @@ export type SignupRequest = z.input<typeof signupRequestSchema>
 export type LoginRequest = z.input<typeof loginRequestSchema>
 export type User = z.infer<typeof userSchema>
 export type MeResponse = z.infer<typeof meResponseSchema>
+export type ManagedBarbershop = z.infer<typeof managedBarbershopSchema>
+export type MembershipSummary = z.infer<typeof membershipSummarySchema>
 export type ApiErrorBody = z.infer<typeof apiErrorSchema>
 
 /** Erros de validação do Zod no formato { campo: primeira mensagem }. */

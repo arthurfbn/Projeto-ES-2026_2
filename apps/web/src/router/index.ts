@@ -40,6 +40,12 @@ export function createAppRouter(queryClient: QueryClient, history: RouterHistory
         component: () => import('@/features/barbearias/pages/BarbershopPage.vue'),
         meta: { requiresAuth: true },
       },
+      {
+        path: '/vinculos/:membershipId',
+        name: 'membership',
+        component: () => import('@/features/barbearias/pages/MembershipPage.vue'),
+        meta: { requiresAuth: true },
+      },
     ],
   })
 

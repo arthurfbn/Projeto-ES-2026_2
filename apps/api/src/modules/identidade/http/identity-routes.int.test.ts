@@ -18,7 +18,15 @@ async function makeApp(authRateLimit = { max: 1000, timeWindow: '1 minute' }) {
     probe: { isUp: async () => true },
     errorReporter: { capture() {}, async flush() {} },
     version: 'test',
-    modules: [createIdentityModule({ db, clock, authRateLimit })],
+    // Sem barbearias aqui: o que o Início mostra é testado no módulo barbearias.
+    modules: [
+      createIdentityModule({
+        db,
+        clock,
+        authRateLimit,
+        profiles: { listForUser: async () => ({ managedBarbershops: [], memberships: [] }) },
+      }),
+    ],
   })
 }
 

@@ -5,6 +5,7 @@ import {
   barbershopResponseSchema,
   membershipListResponseSchema,
   membershipResponseSchema,
+  ownMembershipResponseSchema,
   receivedInvitationListResponseSchema,
   sentInvitationResponseSchema,
   serviceListResponseSchema,
@@ -16,6 +17,7 @@ import {
   type CreateInvitationRequest,
   type CreateServiceRequest,
   type Membership,
+  type OwnMembership,
   type ReceivedInvitation,
   type SentInvitationResponse,
   type Service,
@@ -109,4 +111,10 @@ export async function setBarberService(
 
 export function removeBarberService(barbershopId: string, membershipId: string, serviceId: string): Promise<void> {
   return apiDelete(`${barberServicesPath(barbershopId, membershipId)}/${encodeURIComponent(serviceId)}`)
+}
+
+/** Página do vínculo, vista pelo próprio barbeiro (ADR-0022). */
+export async function fetchOwnMembership(membershipId: string, signal?: AbortSignal): Promise<OwnMembership> {
+  const path = `/memberships/${encodeURIComponent(membershipId)}`
+  return (await apiGet(path, ownMembershipResponseSchema, { signal })).membership
 }

@@ -18,6 +18,7 @@ import {
   fetchBarberServices,
   fetchBarbershop,
   fetchMemberships,
+  fetchOwnMembership,
   fetchReceivedInvitations,
   fetchServices,
   inviteToBarbershop,
@@ -43,8 +44,23 @@ export function useCreateBarbershop() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (input: CreateBarbershopRequest) => createBarbershop(input),
-    // A página da barbearia abre já com os dados, sem nova ida à API.
-    onSuccess: (created) => queryClient.setQueryData(barbershopQueryKey(created.barbershop.id), created),
+    onSuccess: async (created) => {
+      // A página da barbearia abre já com os dados, sem nova ida à API.
+      queryClient.setQueryData(barbershopQueryKey(created.barbershop.id), created)
+      // A nova barbearia entra em Minhas barbearias (e em Meus vínculos, com "eu também atendo").
+      await queryClient.invalidateQueries({ queryKey: meQueryKey })
+    },
+  })
+}
+
+export const ownMembershipQueryKey = (membershipId: string) => ['memberships', membershipId] as const
+
+/** Página do vínculo (ADR-0022). 404 (não é seu ou não existe) não é tentado de novo. */
+export function useOwnMembership(membershipId: MaybeRefOrGetter<string>) {
+  return useQuery({
+    queryKey: computed(() => ownMembershipQueryKey(toValue(membershipId))),
+    queryFn: ({ signal }) => fetchOwnMembership(toValue(membershipId), signal),
+    retry: (failureCount, error) => !(error instanceof ApiError && error.status === 404) && failureCount < 2,
   })
 }
 
