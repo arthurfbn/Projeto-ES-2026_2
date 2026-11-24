@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { createInvitationRequestSchema } from './invitations'
+import { acceptInvitationRequestSchema, createInvitationRequestSchema } from './invitations'
 
 describe('createInvitationRequestSchema (R10)', () => {
   it('normaliza o e-mail e assume convite não exclusivo', () => {
@@ -19,5 +19,15 @@ describe('createInvitationRequestSchema (R10)', () => {
     expect(
       createInvitationRequestSchema.safeParse({ email: 'a@exemplo.com', kind: 'barber', barbershopId: 'x' }).success,
     ).toBe(false)
+  })
+})
+
+describe('acceptInvitationRequestSchema (R14c)', () => {
+  it('corpo vazio não confirma a saída', () => {
+    expect(acceptInvitationRequestSchema.parse({})).toEqual({ confirmLeave: false })
+  })
+
+  it('recusa campos desconhecidos', () => {
+    expect(acceptInvitationRequestSchema.safeParse({ confirmLeave: true, userId: 'x' }).success).toBe(false)
   })
 })
