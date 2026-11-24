@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { barbershopSchema } from './barbershops'
 
 /**
  * Vínculo e turno permitido (spec 001, R15, R21; ADR-0019). Janelas semanais em dia da semana
@@ -50,6 +51,24 @@ export const membershipSchema = z.object({
   shift: z.array(weeklyWindowSchema),
 })
 
+/**
+ * GET /memberships/:membershipId: o vínculo visto pelo próprio barbeiro (página do vínculo,
+ * só leitura; ADR-0022). Serviços do barbeiro (#13) e disponibilidade (#14) entram depois.
+ */
+export const ownMembershipResponseSchema = z.object({
+  membership: z.object({
+    id: z.uuid(),
+    barbershop: barbershopSchema,
+    hiredAt: z.iso.datetime(),
+    /** Gerente que aprovou (quem convidou, ou o próprio barbeiro ao criar a barbearia). */
+    approvedBy: z.object({ name: z.string() }),
+    isExclusive: z.boolean(),
+    acceptsAppointments: z.boolean(),
+    isActive: z.boolean(),
+    shift: z.array(weeklyWindowSchema),
+  }),
+})
+
 /** GET /barbershops/:barbershopId/memberships (visão do gerente). */
 export const membershipListResponseSchema = z.object({ memberships: z.array(membershipSchema) })
 
@@ -70,3 +89,5 @@ export type UpdateMembershipRequest = z.input<typeof updateMembershipRequestSche
 export type Membership = z.infer<typeof membershipSchema>
 export type MembershipListResponse = z.infer<typeof membershipListResponseSchema>
 export type MembershipResponse = z.infer<typeof membershipResponseSchema>
+export type OwnMembershipResponse = z.infer<typeof ownMembershipResponseSchema>
+export type OwnMembership = OwnMembershipResponse['membership']

@@ -14,6 +14,8 @@ afterAll(() => server.close())
 
 const ze: MeResponse = {
   user: { id: '6f1c2d3e-4a5b-4c6d-8e9f-0a1b2c3d4e5f', name: 'Zé Navalha', email: 'ze@exemplo.com', phone: '11987654321' },
+  managedBarbershops: [],
+  memberships: [],
 }
 const shopId = '0b6f6a52-6a8e-4f7e-9d43-2a3c1b0d9e11'
 const invitationsUrl = `*/api/barbershops/${shopId}/invitations`
@@ -182,18 +184,19 @@ const pendingInvitation: ReceivedInvitation = {
 }
 
 describe('convidado vê e aceita convites ao entrar (R14)', () => {
-  it('mostra o convite pendente na página inicial; aceitar abre a barbearia como barbeiro', async () => {
+  it('mostra o convite pendente no Início; aceitar mantém no Início e o vínculo aparece em Meus vínculos', async () => {
     let invitations = [pendingInvitation]
+    let me: MeResponse = ze
     const accepted: string[] = []
     server.use(
-      http.get('*/api/me', () => HttpResponse.json(ze)),
+      http.get('*/api/me', () => HttpResponse.json(me)),
       http.get('*/api/invitations', () => HttpResponse.json({ invitations })),
       http.post('*/api/invitations/:invitationId/accept', ({ params }) => {
         accepted.push(String(params.invitationId))
         invitations = []
+        me = { ...ze, memberships: [{ id: '9c1d2e3f-4a5b-4c6d-8e7f-0a1b2c3d4e5f', barbershopId: shopId, barbershopName: 'Barbearia do Zé' }] }
         return HttpResponse.json({ barbershopId: shopId, kind: 'barber' })
       }),
-      http.get(`*/api/barbershops/${shopId}`, () => HttpResponse.json(shop({ manager: false, barber: true }))),
     )
     const { wrapper, router } = await renderRoute('/')
     await waitUntil(() => wrapper.text().includes('Convites'))
@@ -203,11 +206,12 @@ describe('convidado vê e aceita convites ao entrar (R14)', () => {
     expect(list).toContain('Barbeiro · vínculo exclusivo · vale até 28/11')
 
     await wrapper.get('button[aria-label="Aceitar convite de Barbearia do Zé"]').trigger('click')
-    await waitUntil(() => router.currentRoute.value.name === 'barbershop')
-    await waitUntil(() => wrapper.text().includes('Barbeiro'))
+    await waitUntil(() => wrapper.text().includes('Meus vínculos'))
 
     expect(accepted).toEqual([pendingInvitation.id])
-    expect(router.currentRoute.value.params.barbershopId).toBe(shopId)
+    expect(router.currentRoute.value.name).toBe('home')
+    expect(wrapper.get('[role="status"]').text()).toBe('Convite aceito. Barbearia do Zé já está em Meus vínculos.')
+    expect(wrapper.find('[data-testid="invitation-list"]').exists()).toBe(false)
   })
 
   it('sem convites pendentes, a página inicial não mostra o bloco', async () => {

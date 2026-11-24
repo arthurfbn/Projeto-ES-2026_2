@@ -57,6 +57,16 @@ export function createPrismaMembershipRepository(db: Db): MembershipRepository {
       await db.barberMembership.update({ where: { id: membershipId }, data: patch })
     },
 
+    async findWithOrigin(membershipId) {
+      const row = await db.barberMembership.findUnique({
+        where: { id: membershipId },
+        select: { ...membershipSelect, barbershopId: true, approvedByUserId: true },
+      })
+      if (!row) return null
+      const { barbershopId, approvedByUserId, ...membership } = row
+      return { ...toRecord(membership), barbershopId, approvedByUserId }
+    },
+
     async activeElsewhere(userId, barbershopId) {
       const active = await db.barberMembership.findMany({
         where: { userId, isActive: true, barbershopId: { not: barbershopId } },

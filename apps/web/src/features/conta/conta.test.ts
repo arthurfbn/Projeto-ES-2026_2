@@ -17,6 +17,8 @@ afterAll(() => server.close())
 
 const ana: MeResponse = {
   user: { id: '6f1c2d3e-4a5b-4c6d-8e9f-0a1b2c3d4e5f', name: 'Ana Souza', email: 'ana@exemplo.com', phone: '11987654321' },
+  managedBarbershops: [],
+  memberships: [],
 }
 
 function visitor() {
@@ -141,7 +143,7 @@ describe('cadastro', () => {
     expect(senha.attributes('type')).toBe('password')
   })
 
-  it('CA1: depois de cadastrar, entra logado e vê a visão de cliente', async () => {
+  it('CA1: depois de cadastrar, entra logado e vê o Início', async () => {
     visitor()
     server.use(http.post('*/api/auth/signup', () => HttpResponse.json(ana, { status: 201 })))
     const { wrapper, router } = await renderRoute('/cadastro')
@@ -152,7 +154,6 @@ describe('cadastro', () => {
 
     expect(router.currentRoute.value.name).toBe('home')
     expect(wrapper.text()).toContain('Olá, Ana Souza')
-    expect(wrapper.text()).toContain('Visão: Cliente')
   })
 })
 

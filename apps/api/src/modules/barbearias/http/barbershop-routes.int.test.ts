@@ -4,7 +4,7 @@ import { buildApp } from '../../../app'
 import { fixedClock } from '../../../shared/clock'
 import { createDb } from '../../../shared/db/prisma'
 import { createIdentityModule, createUserDirectory, SESSION_COOKIE } from '../../identidade'
-import { createBarbershopsModule } from '../index'
+import { createBarbershopProfilesQuery, createBarbershopsModule } from '../index'
 
 const databaseUrl = process.env.DATABASE_URL
 if (!databaseUrl) throw new Error('DATABASE_URL é obrigatória nos testes de integração')
@@ -14,7 +14,12 @@ const now = '2026-11-21T10:00:00-03:00'
 const clock = fixedClock(now)
 
 async function makeApp() {
-  const identity = createIdentityModule({ db, clock, authRateLimit: { max: 1000, timeWindow: '1 minute' } })
+  const identity = createIdentityModule({
+    db,
+    clock,
+    profiles: createBarbershopProfilesQuery(db),
+    authRateLimit: { max: 1000, timeWindow: '1 minute' },
+  })
   return buildApp({
     probe: { isUp: async () => true },
     errorReporter: { capture() {}, async flush() {} },

@@ -118,7 +118,14 @@ export interface MembershipRepository {
   update(membershipId: string, patch: MembershipPatch): Promise<void>
   /** Vínculos ativos do barbeiro fora desta barbearia (para a exclusividade). */
   activeElsewhere(userId: string, barbershopId: string): Promise<{ any: boolean; exclusive: boolean }>
+  /**
+   * Vínculo pelo id, de qualquer barbearia, com a barbearia e quem aprovou. Só para a página do
+   * próprio barbeiro: quem chama confere `userId` (ver app/own-membership.ts).
+   */
+  findWithOrigin(membershipId: string): Promise<(MembershipRecord & MembershipOrigin) | null>
 }
+
+export type MembershipOrigin = { barbershopId: string; approvedByUserId: string }
 
 /**
  * Disponibilidade semanal do barbeiro nesta barbearia (R21). A disponibilidade nasce na #14;
