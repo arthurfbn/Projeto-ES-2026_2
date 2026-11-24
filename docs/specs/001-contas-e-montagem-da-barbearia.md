@@ -15,7 +15,7 @@ Usuário, Perfil, Visão, Cliente, Barbeiro, Gerente, Barbearia, Convite, Víncu
 
 **Perfis e visões**
 - R5. `GET /me` devolve o usuário e seus perfis: cliente, e para cada barbearia se é gerente e/ou barbeiro.
-- R6. A interface alterna visões (cliente; gerente ou barbeiro de uma barbearia). O backend autoriza sempre pelo vínculo, nunca pela visão escolhida.
+- R6. Não há seletor de visão (ADR-0022). Ao entrar, todo usuário vê o **Início**: convites pendentes, **Minhas barbearias** (onde é gerente; abre a Gestão da barbearia) e **Meus vínculos** (abre a página do vínculo, só leitura), em carrosséis, e navbar lateral (barra inferior no celular) com Início, Criar barbearia e Sair. O backend autoriza sempre pelo vínculo/gerência.
 
 **Barbearia**
 - R7. Qualquer usuário cria uma barbearia com nome e endereço estruturado: CEP (8 dígitos), rua, número, complemento (opcional), bairro, cidade, UF (sigla válida).
@@ -43,10 +43,10 @@ Usuário, Perfil, Visão, Cliente, Barbeiro, Gerente, Barbearia, Convite, Víncu
 - R21. Na semana 1, o gerente só altera o turno se nenhuma disponibilidade existente ficar de fora; caso contrário, erro "há disponibilidade fora do novo turno". A proposta de mudança de turno ao barbeiro (ADR-0019) entra na semana 3.
 
 ## Critérios de aceite
-- CA1 (R1, R3) Given visitante, When se cadastra com dados válidos, Then entra logado e vê a visão de cliente.
+- CA1 (R1, R3) Given visitante, When se cadastra com dados válidos, Then entra logado e vê o Início.
 - CA2 (R1) Given e-mail já cadastrado (em qualquer caixa), When tenta se cadastrar, Then recebe "e-mail já cadastrado".
 - CA3 (R3, R4) Given usuário, When erra a senha, Then recebe mensagem genérica; When acerta, Then fica logado; When sai, Then a sessão some do banco e `/me` responde 401.
-- CA4 (R5, R6) Given gerente de A e barbeiro de B, When abre o seletor, Then vê Cliente, Gerente·A e Barbeiro·B; When chama rota de gerente de B, Then 403.
+- CA4 (R5, R6) Given gerente de A e barbeiro de B, When abre o Início, Then vê A em Minhas barbearias e B em Meus vínculos; When toca em A, Then abre a Gestão de A; When toca em B, Then vê o vínculo (contratação, aprovado por, exclusividade, turno); When chama rota de gerente de B, Then 403.
 - CA5 (R7, R8) Given usuário logado, When cria barbearia válida marcando "eu também atendo", Then aparece como gerente e barbeiro dela; sem marcar, só gerente.
 - CA6 (R7) Given CEP com 7 dígitos ou UF inexistente, When envia, Then erro no campo.
 - CA7 (R9) Given gerente, When cria serviço de 20 min, Then erro de duração; When cria de 30 min e R$ 40,00, Then aparece na lista; When desativa, Then aparece como inativo e continua listado para o gerente.

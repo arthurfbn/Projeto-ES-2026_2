@@ -17,7 +17,7 @@
 - Scaffold do monorepo (pnpm, web, api, contracts), lint/typecheck/Vitest, CI no GitHub Actions, proteção da `main`.
 - Infra gratuita (ADR-0015/0016): Railway na conta do Bruno (API + Postgres), Vercel (web) com preview por PR e proxy `/api`, Sentry.
 - Schema completo (Prisma + constraints) e seed.
-- Fatias: cadastro/login com sessão; `/me` com perfis e troca de visão; gerente cria barbearia, serviços (preço e duração padrão), adiciona gerentes e cria vínculos de barbeiros com preço/duração por barbeiro; barbeiro define disponibilidade.
+- Fatias: cadastro/login com sessão; `/me` com perfis e Início com Minhas barbearias e Meus vínculos (ADR-0022); gerente cria barbearia, serviços (preço e duração padrão), adiciona gerentes e cria vínculos de barbeiros com preço/duração por barbeiro; barbeiro define disponibilidade.
 - **Demo da semana:** gerente monta uma barbearia em produção.
 
 ## Semana 2 (23–29/11) — Agenda e pagamento
