@@ -9,7 +9,7 @@ import { buildApp } from '../../../app'
 import { fixedClock, type Clock } from '../../../shared/clock'
 import { createDb } from '../../../shared/db/prisma'
 import { createIdentityModule, createUserDirectory, SESSION_COOKIE } from '../../identidade'
-import { createBarbershopsModule } from '../index'
+import { createBarbershopProfilesQuery, createBarbershopsModule } from '../index'
 
 const databaseUrl = process.env.DATABASE_URL
 if (!databaseUrl) throw new Error('DATABASE_URL é obrigatória nos testes de integração')
@@ -20,7 +20,12 @@ const acceptedAt = '2026-11-23T15:30:00-03:00'
 
 /** O relógio muda entre o convite e o aceite; cada etapa monta o app com o seu. */
 async function makeApp(clock: Clock = fixedClock(invitedAt)) {
-  const identity = createIdentityModule({ db, clock, authRateLimit: { max: 1000, timeWindow: '1 minute' } })
+  const identity = createIdentityModule({
+    db,
+    clock,
+    profiles: createBarbershopProfilesQuery(db),
+    authRateLimit: { max: 1000, timeWindow: '1 minute' },
+  })
   return buildApp({
     probe: { isUp: async () => true },
     errorReporter: { capture() {}, async flush() {} },

@@ -8,11 +8,18 @@ import { createPrismaInvitationRepository } from './adapters/prisma-invitation-r
 import type { AvailabilityReader, BarbershopPorts, UserDirectory } from './app/ports'
 import { registerInvitationRoutes } from './http/invitation-routes'
 import { registerMembershipRoutes } from './http/membership-routes'
+import { registerOwnMembershipRoutes } from './http/own-membership-routes'
 import { registerBarbershopRoutes } from './http/routes'
 import { registerServiceRoutes } from './http/service-routes'
 
 /** API pública do módulo barbearias (barbearia, gerência, vínculos, turno, serviços e convites). */
 export type { AvailabilityReader, UserDirectory } from './app/ports'
+
+/**
+ * O que o Início mostra de barbearias, para o /me do módulo identidade (R5; ADR-0022). Criado à
+ * parte do módulo porque a identidade nasce antes dele (este módulo usa o `requireUser` dela).
+ */
+export { createPrismaBarbershopProfilesQuery as createBarbershopProfilesQuery } from './adapters/prisma-barbershop-profiles-query'
 
 export type BarbershopsModuleOptions = {
   db: Db
@@ -44,6 +51,7 @@ export function createBarbershopsModule(options: BarbershopsModuleOptions) {
       registerServiceRoutes(app, ports, options.requireUser)
       registerInvitationRoutes(app, ports, options.requireUser)
       registerMembershipRoutes(app, ports, options.requireUser)
+      registerOwnMembershipRoutes(app, ports, options.requireUser)
     },
   }
 }

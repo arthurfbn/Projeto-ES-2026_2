@@ -1,3 +1,4 @@
+import type { MeResponse } from '@shavey/contracts'
 import type { Result } from '../../../shared/result'
 import type { Clock } from '../../../shared/clock'
 
@@ -31,9 +32,18 @@ export interface PasswordHasher {
   verify(hash: string, password: string): Promise<boolean>
 }
 
+/**
+ * Barbearias que o usuário gerencia e seus vínculos ativos (R5; ADR-0022). Quem sabe responder é
+ * o módulo barbearias; a identidade só conhece esta porta (ADR-0003).
+ */
+export interface BarbershopProfilesQuery {
+  listForUser(userId: string): Promise<Omit<MeResponse, 'user'>>
+}
+
 export type IdentityPorts = {
   users: UserRepository
   sessions: SessionRepository
   hasher: PasswordHasher
+  profiles: BarbershopProfilesQuery
   clock: Clock
 }
