@@ -11,7 +11,7 @@ Uma mesma pessoa pode ser cliente em qualquer barbearia, barbeiro em uma ou mais
 - Todo usuário é **cliente** por padrão.
 - Perfis por barbearia em tabelas de vínculo: `barbershop_managers (user_id, barbershop_id)` e `barber_memberships (user_id, barbershop_id, ...)`.
 - Quem cria uma barbearia vira gerente dela. Barbeiro sem barbearia não existe: quem trabalha sozinho cria a própria barbearia e é gerente e barbeiro.
-- A interface tem **visões** (cliente, barbeiro, gerente) com seletor de barbearia; o backend autoriza por vínculo, nunca pela visão escolhida no front.
+- ~~A interface tem **visões** (cliente, barbeiro, gerente) com seletor de barbearia~~ (substituído pelo ADR-0022: Início único, sem seletor); o backend autoriza por vínculo, nunca pelo que a tela mostra.
 
 ## Alternativas
 - Papel global (projPOO/DDL): simples, mas obriga contas duplicadas.
