@@ -6,6 +6,8 @@ import { renderRoute, settle, waitUntil } from '@/test/render'
 
 const ze: MeResponse = {
   user: { id: '6f1c2d3e-4a5b-4c6d-8e9f-0a1b2c3d4e5f', name: 'Zé Navalha', email: 'ze@exemplo.com', phone: '11987654321' },
+  managedBarbershops: [],
+  memberships: [],
 }
 
 const server = setupServer(http.get('*/api/me', () => HttpResponse.json(ze)))

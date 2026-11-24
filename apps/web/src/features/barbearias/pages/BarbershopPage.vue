@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
-import AppHeader from '@/components/AppHeader.vue'
+import AppShell from '@/components/AppShell.vue'
 import { ApiError } from '@/lib/http'
 import { formatCep } from '@/lib/masks'
 import InviteSection from '../components/InviteSection.vue'
@@ -17,9 +17,8 @@ const notFound = computed(() => error.value instanceof ApiError && error.value.s
 </script>
 
 <template>
-  <div class="mx-auto flex min-h-dvh w-full max-w-xl flex-col gap-8 px-4 py-6 sm:py-10">
-    <AppHeader />
-    <main
+  <AppShell>
+    <div
       class="flex flex-col gap-6"
       aria-live="polite"
     >
@@ -93,6 +92,6 @@ const notFound = computed(() => error.value instanceof ApiError && error.value.s
         <TeamSection :barbershop-id="barbershopId" />
         <InviteSection :barbershop-id="barbershopId" />
       </template>
-    </main>
-  </div>
+    </div>
+  </AppShell>
 </template>

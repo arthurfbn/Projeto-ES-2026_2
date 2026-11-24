@@ -2,7 +2,7 @@
 import { computed, reactive, useId } from 'vue'
 import { useRouter } from 'vue-router'
 import { createBarbershopRequestSchema } from '@shavey/contracts'
-import AppHeader from '@/components/AppHeader.vue'
+import AppShell from '@/components/AppShell.vue'
 import TextField from '@/components/TextField.vue'
 import { useFormErrors } from '@/features/conta/form-errors'
 import { cepMask } from '@/lib/masks'
@@ -47,9 +47,8 @@ async function submit() {
 </script>
 
 <template>
-  <div class="mx-auto flex min-h-dvh w-full max-w-xl flex-col gap-8 px-4 py-6 sm:py-10">
-    <AppHeader />
-    <main class="flex flex-col gap-6">
+  <AppShell>
+    <div class="flex flex-col gap-6">
       <div class="flex flex-col gap-2">
         <h1 class="font-display text-[2rem] font-extrabold leading-tight tracking-[-0.02em]">
           Criar barbearia
@@ -174,6 +173,6 @@ async function submit() {
           {{ create.isPending.value ? 'Criando barbearia…' : 'Criar barbearia' }}
         </button>
       </form>
-    </main>
-  </div>
+    </div>
+  </AppShell>
 </template>

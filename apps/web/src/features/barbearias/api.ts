@@ -3,6 +3,7 @@ import {
   barbershopResponseSchema,
   membershipListResponseSchema,
   membershipResponseSchema,
+  ownMembershipResponseSchema,
   receivedInvitationListResponseSchema,
   sentInvitationResponseSchema,
   serviceListResponseSchema,
@@ -13,6 +14,7 @@ import {
   type CreateInvitationRequest,
   type CreateServiceRequest,
   type Membership,
+  type OwnMembership,
   type ReceivedInvitation,
   type SentInvitationResponse,
   type Service,
@@ -79,4 +81,10 @@ export async function updateMembership(
 ): Promise<Membership> {
   const path = `${membershipsPath(barbershopId)}/${encodeURIComponent(membershipId)}`
   return (await apiPatch(path, patch, membershipResponseSchema)).membership
+}
+
+/** Página do vínculo, vista pelo próprio barbeiro (ADR-0022). */
+export async function fetchOwnMembership(membershipId: string, signal?: AbortSignal): Promise<OwnMembership> {
+  const path = `/memberships/${encodeURIComponent(membershipId)}`
+  return (await apiGet(path, ownMembershipResponseSchema, { signal })).membership
 }
