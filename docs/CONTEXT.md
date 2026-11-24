@@ -8,15 +8,26 @@
 ### Pessoas e perfis
 
 **Usuário** (User)
-Conta única de uma pessoa, com nome, e-mail (único) e telefone (Brasil, DDD + 10 ou 11 dígitos; pode se repetir entre usuários), todos obrigatórios. Um mesmo usuário pode atuar em vários perfis, em barbearias diferentes, alternando entre **visões**.
+Conta única de uma pessoa, com nome, e-mail (único) e telefone (Brasil, DDD + 10 ou 11 dígitos; pode se repetir entre usuários), todos obrigatórios. Um mesmo usuário pode atuar em vários perfis, em barbearias diferentes, ao mesmo tempo: não há troca de modo; o **Início** mostra tudo o que é dele (ADR-0022).
 _Evitar_: conta (como sinônimo de pessoa), login
 
 **Perfil** (Role)
 Papel que o usuário exerce: **Cliente**, **Barbeiro** ou **Gerente**. Barbeiro e Gerente são sempre perfis *em uma barbearia*; Cliente é global.
 _Evitar_: tipo de usuário, permissão
 
-**Visão** (View)
-Modo da interface correspondente a um perfil e, para barbeiro/gerente, à barbearia selecionada (ou "todas", no painel geral do gerente).
+**Início** (Home)
+Feed que todo usuário vê ao entrar, igual para todos os perfis (ADR-0022). Mostra o que existe para ele: convites pendentes, **Minhas barbearias** e **Meus vínculos** (e, quando existirem, busca, serviços da plataforma, recentes e favoritos, meus agendamentos).
+_Evitar_: visão, modo, dashboard
+
+**Minhas barbearias** (Managed barbershops)
+Carrossel no Início com as barbearias em que o usuário é gerente. Tocar abre a **Gestão da barbearia**.
+
+**Meus vínculos** (My memberships)
+Carrossel no Início com os vínculos de barbeiro do usuário. Tocar abre a página do vínculo (somente leitura para o barbeiro). Quem é gerente e barbeiro da mesma barbearia aparece nos dois carrosséis.
+
+**Gestão da barbearia** (Barbershop management)
+Tela do gerente para uma barbearia: dados, serviços, equipe, convites (e, depois, regras de comissão e o **Painel**).
+_Evitar_: painel de admin, admin, visão de gerente
 
 **Cliente** (Client)
 Perfil de quem agenda e recebe serviços em qualquer barbearia.
