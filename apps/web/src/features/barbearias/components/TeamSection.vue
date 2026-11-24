@@ -4,6 +4,7 @@ import type { Membership, UpdateMembershipRequest, WeeklyWindow } from '@shavey/
 import { formErrorsFrom } from '@/features/conta/form-errors'
 import { summarizeWindows } from '@/lib/weekly-windows'
 import { useMemberships, useUpdateMembership, useUpdateShift } from '../queries'
+import BarberServicesPanel from './BarberServicesPanel.vue'
 import ShiftEditor from './ShiftEditor.vue'
 
 const props = defineProps<{ barbershopId: string }>()
@@ -13,6 +14,8 @@ const updateShift = useUpdateShift(() => props.barbershopId)
 const updateMembership = useUpdateMembership(() => props.barbershopId)
 
 const editingId = ref<string | null>(null)
+/** Vínculo com o painel de serviços do barbeiro aberto (R16). */
+const servicesOpenId = ref<string | null>(null)
 const actionError = ref<{ membershipId: string; message: string } | null>(null)
 
 const hiredFormat = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeZone: 'America/Sao_Paulo' })
@@ -172,6 +175,14 @@ const busy = () => updateShift.isPending.value || updateMembership.isPending.val
           >
             {{ membership.isActive ? 'Desativar vínculo' : 'Reativar vínculo' }}
           </button>
+          <button
+            type="button"
+            class="h-9 rounded-md border border-input px-3 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-ring"
+            :aria-expanded="servicesOpenId === membership.id"
+            @click="servicesOpenId = servicesOpenId === membership.id ? null : membership.id"
+          >
+            Serviços do barbeiro
+          </button>
         </div>
         <p
           v-if="actionError?.membershipId === membership.id"
@@ -180,6 +191,12 @@ const busy = () => updateShift.isPending.value || updateMembership.isPending.val
         >
           {{ actionError.message }}
         </p>
+        <BarberServicesPanel
+          v-if="servicesOpenId === membership.id"
+          :barbershop-id="barbershopId"
+          :membership-id="membership.id"
+          :barber-name="membership.barber.name"
+        />
       </li>
     </ul>
   </section>

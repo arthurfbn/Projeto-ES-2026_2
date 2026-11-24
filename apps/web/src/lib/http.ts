@@ -22,7 +22,7 @@ export class ApiError extends Error {
 const API_BASE = '/api'
 
 async function request(
-  method: 'GET' | 'POST' | 'PATCH' | 'PUT',
+  method: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE',
   path: string,
   options: { body?: unknown; acceptStatuses?: number[]; signal?: AbortSignal },
 ): Promise<unknown> {
@@ -66,4 +66,9 @@ export async function apiPut<S extends z.ZodType>(path: string, body: unknown, s
 /** POST sem corpo de resposta (ex.: 204 do logout). */
 export async function apiPostEmpty(path: string): Promise<void> {
   await request('POST', path, {})
+}
+
+/** DELETE sem corpo de resposta (204). */
+export async function apiDelete(path: string): Promise<void> {
+  await request('DELETE', path, {})
 }
