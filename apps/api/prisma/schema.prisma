@@ -105,7 +105,10 @@ model BarberMembership {
   updatedAt           DateTime       @updatedAt @map("updated_at") @db.Timestamptz
   allowedShifts       AllowedShift[]
 
+  barberServices BarberService[]
+
   @@unique([barbershopId, userId])
+  @@unique([id, barbershopId])
   @@index([userId])
   @@map("barber_memberships")
 }
@@ -122,6 +125,9 @@ model Service {
   createdAt       DateTime   @default(now()) @map("created_at") @db.Timestamptz
   updatedAt       DateTime   @updatedAt @map("updated_at") @db.Timestamptz
 
+  barberServices BarberService[]
+
+  @@unique([id, barbershopId])
   @@index([barbershopId])
   @@map("services")
 }
@@ -182,4 +188,24 @@ model AllowedShift {
 
   @@index([membershipId])
   @@map("allowed_shifts")
+}
+
+/// Serviço do barbeiro (R16): o barbeiro realiza o serviço na barbearia, com preço e duração
+/// próprios opcionais (null = padrão do serviço). Chaves compostas com barbershop_id garantem no
+/// banco que vínculo e serviço são da mesma barbearia.
+model BarberService {
+  id              String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  barbershopId    String           @map("barbershop_id") @db.Uuid
+  membershipId    String           @map("membership_id") @db.Uuid
+  membership      BarberMembership @relation(fields: [membershipId, barbershopId], references: [id, barbershopId], onDelete: Cascade)
+  serviceId       String           @map("service_id") @db.Uuid
+  service         Service          @relation(fields: [serviceId, barbershopId], references: [id, barbershopId], onDelete: Restrict)
+  priceCents      Int?             @map("price_cents")
+  durationMinutes Int?             @map("duration_minutes")
+  createdAt       DateTime         @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime         @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@unique([membershipId, serviceId])
+  @@index([serviceId])
+  @@map("barber_services")
 }
