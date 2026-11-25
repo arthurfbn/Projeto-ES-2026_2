@@ -106,9 +106,11 @@ model BarberMembership {
   allowedShifts       AllowedShift[]
 
   barberServices BarberService[]
+  availabilities BarberAvailability[]
 
   @@unique([barbershopId, userId])
   @@unique([id, barbershopId])
+  @@unique([id, barbershopId, userId])
   @@index([userId])
   @@map("barber_memberships")
 }
@@ -208,4 +210,26 @@ model BarberService {
   @@unique([membershipId, serviceId])
   @@index([serviceId])
   @@map("barber_services")
+}
+
+/// Disponibilidade (R17–R20): janela semanal em que o barbeiro atende numa barbearia, com vigência
+/// em datas de São Paulo (inclusivas; sem fim = em diante). Dia 0 = domingo … 6 = sábado; minutos
+/// do dia de 15 em 15. A chave composta garante vínculo, barbearia e barbeiro coerentes; a constraint
+/// EXCLUDE (migration) impede sobreposição do mesmo barbeiro em qualquer barbearia (R20).
+model BarberAvailability {
+  id           String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  barbershopId String           @map("barbershop_id") @db.Uuid
+  userId       String           @map("user_id") @db.Uuid
+  membershipId String           @map("membership_id") @db.Uuid
+  membership   BarberMembership @relation(fields: [membershipId, barbershopId, userId], references: [id, barbershopId, userId], onDelete: Cascade)
+  weekday      Int              @db.SmallInt
+  startMinute  Int              @map("start_minute") @db.SmallInt
+  endMinute    Int              @map("end_minute") @db.SmallInt
+  validFrom    DateTime         @map("valid_from") @db.Date
+  validUntil   DateTime?        @map("valid_until") @db.Date
+  createdAt    DateTime         @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([membershipId])
+  @@index([userId, weekday])
+  @@map("barber_availabilities")
 }
