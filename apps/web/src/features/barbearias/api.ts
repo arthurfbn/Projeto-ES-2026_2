@@ -1,5 +1,7 @@
 import {
   acceptInvitationResponseSchema,
+  availabilityListResponseSchema,
+  availabilityResponseSchema,
   barberServiceListResponseSchema,
   barberServiceResponseSchema,
   barbershopResponseSchema,
@@ -12,8 +14,10 @@ import {
   serviceListResponseSchema,
   serviceResponseSchema,
   type AcceptInvitationResponse,
+  type Availability,
   type BarberService,
   type BarbershopResponse,
+  type CreateAvailabilityRequest,
   type CreateBarbershopRequest,
   type CreateInvitationRequest,
   type CreateServiceRequest,
@@ -137,4 +141,18 @@ export function removeBarberService(barbershopId: string, membershipId: string, 
 export async function fetchOwnMembership(membershipId: string, signal?: AbortSignal): Promise<OwnMembership> {
   const path = `/memberships/${encodeURIComponent(membershipId)}`
   return (await apiGet(path, ownMembershipResponseSchema, { signal })).membership
+}
+
+const availabilityPath = (membershipId: string) => `/memberships/${encodeURIComponent(membershipId)}/availability`
+
+export async function fetchAvailabilities(membershipId: string, signal?: AbortSignal): Promise<Availability[]> {
+  return (await apiGet(availabilityPath(membershipId), availabilityListResponseSchema, { signal })).availabilities
+}
+
+export async function createAvailability(membershipId: string, input: CreateAvailabilityRequest): Promise<Availability> {
+  return (await apiPost(availabilityPath(membershipId), input, availabilityResponseSchema)).availability
+}
+
+export function removeAvailability(membershipId: string, availabilityId: string): Promise<void> {
+  return apiDelete(`${availabilityPath(membershipId)}/${encodeURIComponent(availabilityId)}`)
 }
