@@ -1,6 +1,8 @@
+import type { Result } from '../../../shared/result'
 import type { BrazilianState } from '@shavey/contracts'
 import type { Clock } from '../../../shared/clock'
 import type { WeeklyWindow } from '../core/allowed-shift'
+import type { ExistingAvailability, NewAvailability } from '../core/availability'
 import type { BarbershopCreationPlan } from '../core/barbershop-creation'
 import type {
   InvitationAcceptancePlan,
@@ -153,10 +155,7 @@ export interface MembershipRepository {
 
 export type MembershipOrigin = { barbershopId: string; approvedByUserId: string }
 
-/**
- * Disponibilidade semanal do barbeiro nesta barbearia (R21). A disponibilidade nasce na #14;
- * até lá a composição liga "nenhuma disponibilidade" (ver index.ts).
- */
+/** Disponibilidade semanal do barbeiro nesta barbearia ainda em vigor (hoje ou depois), para o R21. */
 export interface AvailabilityReader {
   weeklyWindows(input: { barbershopId: string; userId: string }): Promise<WeeklyWindow[]>
 }
@@ -189,6 +188,21 @@ export interface BarberServiceRepository {
   remove(barbershopId: string, membershipId: string, serviceId: string): Promise<boolean>
 }
 
+export type AvailabilityRecord = NewAvailability & { id: string }
+
+/** Disponibilidade do barbeiro (R17–R20). Datas da vigência em AAAA-MM-DD (São Paulo). */
+export interface AvailabilityRepository {
+  listByMembership(membershipId: string): Promise<AvailabilityRecord[]>
+  /** Todas as do barbeiro, em qualquer barbearia (R20). */
+  listForBarber(userId: string): Promise<ExistingAvailability[]>
+  /** Traduz a constraint de sobreposição do banco (corrida entre dois cadastros) em erro de domínio. */
+  create(
+    availability: NewAvailability & { membershipId: string; barbershopId: string; userId: string },
+  ): Promise<Result<AvailabilityRecord, 'OVERLAPPING_AVAILABILITY'>>
+  /** Devolve false se a disponibilidade não é deste vínculo. */
+  remove(membershipId: string, availabilityId: string): Promise<boolean>
+}
+
 export type BarbershopPorts = {
   barbershops: BarbershopRepository
   services: ServiceRepository
@@ -196,6 +210,7 @@ export type BarbershopPorts = {
   memberships: MembershipRepository
   barberServices: BarberServiceRepository
   availability: AvailabilityReader
+  availabilities: AvailabilityRepository
   users: UserDirectory
   clock: Clock
 }

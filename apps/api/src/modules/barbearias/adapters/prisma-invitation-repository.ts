@@ -1,5 +1,7 @@
 import type { Db } from '../../../shared/db/prisma'
 import type { InvitationRepository } from '../app/ports'
+import { saoPauloDate } from '../core/availability'
+import { toDbDate } from './prisma-availability-repository'
 
 const sentFields = { id: true, kind: true, isExclusive: true, status: true, expiresAt: true } as const
 
@@ -92,12 +94,20 @@ export function createPrismaInvitationRepository(db: Db): InvitationRepository {
         }
 
         const { barberUserId, ...membership } = grant.membership
-        // R14c: sai das outras barbearias (só vínculos do próprio barbeiro). As disponibilidades
-        // desses vínculos são encerradas na #14, quando a disponibilidade existir.
+        // R14c: sai das outras barbearias (só vínculos do próprio barbeiro) e encerra as
+        // disponibilidades desses vínculos na data do aceite: a que já valia termina nesse dia,
+        // a que só começaria depois deixa de existir.
         if (plan.deactivateMembershipIds.length > 0) {
+          const leaving = { membershipId: { in: plan.deactivateMembershipIds }, userId: barberUserId }
+          const acceptedOn = toDbDate(saoPauloDate(plan.acceptedAt))
           await tx.barberMembership.updateMany({
             where: { id: { in: plan.deactivateMembershipIds }, userId: barberUserId },
             data: { isActive: false },
+          })
+          await tx.barberAvailability.deleteMany({ where: { ...leaving, validFrom: { gt: acceptedOn } } })
+          await tx.barberAvailability.updateMany({
+            where: { ...leaving, OR: [{ validUntil: null }, { validUntil: { gt: acceptedOn } }] },
+            data: { validUntil: acceptedOn },
           })
         }
         await tx.barberMembership.create({

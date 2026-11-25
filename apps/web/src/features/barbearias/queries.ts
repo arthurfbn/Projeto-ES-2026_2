@@ -1,6 +1,7 @@
 import { computed, toValue, type MaybeRefOrGetter } from 'vue'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
 import type {
+  CreateAvailabilityRequest,
   CreateBarbershopRequest,
   CreateInvitationRequest,
   CreateServiceRequest,
@@ -13,9 +14,11 @@ import { meQueryKey } from '@/features/conta/queries'
 import { ApiError } from '@/lib/http'
 import {
   acceptInvitation,
+  createAvailability,
   cancelInvitation,
   createBarbershop,
   createService,
+  fetchAvailabilities,
   fetchBarberServices,
   declineInvitation,
   fetchBarbershop,
@@ -25,6 +28,7 @@ import {
   fetchSentInvitations,
   fetchServices,
   inviteToBarbershop,
+  removeAvailability,
   removeBarberService,
   setBarberService,
   updateMembership,
@@ -213,5 +217,31 @@ export function useRemoveBarberService(barbershopId: MaybeRefOrGetter<string>, m
     mutationFn: (serviceId: string) => removeBarberService(toValue(barbershopId), toValue(membershipId), serviceId),
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: barberServicesQueryKey(toValue(barbershopId), toValue(membershipId)) }),
+  })
+}
+
+export const availabilitiesQueryKey = (membershipId: string) => ['memberships', membershipId, 'availability'] as const
+
+/** Disponibilidade do próprio barbeiro no vínculo (R17). */
+export function useAvailabilities(membershipId: MaybeRefOrGetter<string>) {
+  return useQuery({
+    queryKey: computed(() => availabilitiesQueryKey(toValue(membershipId))),
+    queryFn: ({ signal }) => fetchAvailabilities(toValue(membershipId), signal),
+  })
+}
+
+export function useCreateAvailability(membershipId: MaybeRefOrGetter<string>) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (input: CreateAvailabilityRequest) => createAvailability(toValue(membershipId), input),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: availabilitiesQueryKey(toValue(membershipId)) }),
+  })
+}
+
+export function useRemoveAvailability(membershipId: MaybeRefOrGetter<string>) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (availabilityId: string) => removeAvailability(toValue(membershipId), availabilityId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: availabilitiesQueryKey(toValue(membershipId)) }),
   })
 }

@@ -5,6 +5,7 @@ import AppShell from '@/components/AppShell.vue'
 import { ApiError } from '@/lib/http'
 import { formatCep } from '@/lib/masks'
 import { summarizeWindows } from '@/lib/weekly-windows'
+import AvailabilitySection from '../components/AvailabilitySection.vue'
 import { useOwnMembership } from '../queries'
 
 /** Página do vínculo, só leitura para o barbeiro (ADR-0022). */
@@ -141,6 +142,11 @@ const shiftLines = computed(() => summarizeWindows(membership.value?.shift ?? []
           Sem turno definido: você abre sua agenda nesta barbearia como quiser.
         </p>
       </section>
+
+      <AvailabilitySection
+        :membership-id="membership.id"
+        :is-active="membership.isActive"
+      />
     </template>
   </AppShell>
 </template>
