@@ -4,11 +4,28 @@ import { createInvitationRequestSchema, type InvitationKind } from '@shavey/cont
 import TextField from '@/components/TextField.vue'
 import { useFormErrors } from '@/features/conta/form-errors'
 import { formatDayMonth } from '@/lib/dates'
-import { useInviteToBarbershop } from '../queries'
+import { formErrorsFrom } from '@/features/conta/form-errors'
+import { useCancelInvitation, useInviteToBarbershop, useSentInvitations } from '../queries'
 
 const props = defineProps<{ barbershopId: string }>()
 
 const invite = useInviteToBarbershop(() => props.barbershopId)
+// R13: pendentes enviados, para acompanhar e cancelar.
+const { data: pending, isError: pendingFailed, refetch: refetchPending } = useSentInvitations(() => props.barbershopId)
+const cancel = useCancelInvitation(() => props.barbershopId)
+const cancelError = ref<string | null>(null)
+
+async function cancelInvitation(id: string) {
+  cancelError.value = null
+  try {
+    await cancel.mutateAsync(id)
+  } catch (error) {
+    cancelError.value = formErrorsFrom(error).general ?? 'Não foi possível cancelar o convite. Tente de novo.'
+  }
+}
+
+const roleLabel = (kind: InvitationKind, isExclusive: boolean) =>
+  kind === 'manager' ? 'Gerente' : isExclusive ? 'Barbeiro · vínculo exclusivo' : 'Barbeiro'
 const exclusiveId = useId()
 
 const kinds: Array<{ value: InvitationKind; label: string }> = [
@@ -143,5 +160,62 @@ async function submit() {
         {{ invite.isPending.value ? 'Enviando convite…' : 'Enviar convite' }}
       </button>
     </form>
+
+    <div
+      v-if="pendingFailed"
+      class="flex flex-col gap-3 border-t pt-4"
+    >
+      <p>Não foi possível carregar os convites pendentes.</p>
+      <button
+        type="button"
+        class="h-11 self-start rounded-md border px-4 font-semibold"
+        @click="refetchPending()"
+      >
+        Tentar de novo
+      </button>
+    </div>
+
+    <div
+      v-else-if="pending?.length"
+      class="flex flex-col gap-2 border-t pt-4"
+    >
+      <h3 class="font-semibold">
+        Aguardando resposta
+      </h3>
+      <ul
+        class="flex flex-col divide-y divide-border"
+        data-testid="sent-invitations"
+      >
+        <li
+          v-for="invitation in pending"
+          :key="invitation.id"
+          class="flex items-center justify-between gap-3 py-3"
+        >
+          <div class="flex flex-col">
+            <span class="font-semibold">{{ invitation.invitee.name }}</span>
+            <span class="text-sm text-muted-foreground">
+              {{ roleLabel(invitation.kind, invitation.isExclusive) }} · vale até {{ formatDayMonth(invitation.expiresAt) }}
+            </span>
+          </div>
+          <button
+            type="button"
+            class="h-11 shrink-0 rounded-md border border-input px-4 font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:opacity-60"
+            :aria-label="`Cancelar convite de ${invitation.invitee.name}`"
+            :disabled="cancel.isPending.value"
+            @click="cancelInvitation(invitation.id)"
+          >
+            Cancelar
+          </button>
+        </li>
+      </ul>
+    </div>
+    <!-- Fora da lista: se o convite sumir (já recusado, expirado), a mensagem continua. -->
+    <p
+      v-if="cancelError"
+      role="alert"
+      class="text-sm text-destructive"
+    >
+      {{ cancelError }}
+    </p>
   </section>
 </template>

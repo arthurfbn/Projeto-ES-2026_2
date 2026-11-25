@@ -12,12 +12,15 @@ import { meQueryKey } from '@/features/conta/queries'
 import { ApiError } from '@/lib/http'
 import {
   acceptInvitation,
+  cancelInvitation,
   createBarbershop,
   createService,
+  declineInvitation,
   fetchBarbershop,
   fetchMemberships,
   fetchOwnMembership,
   fetchReceivedInvitations,
+  fetchSentInvitations,
   fetchServices,
   inviteToBarbershop,
   updateMembership,
@@ -78,10 +81,31 @@ export function useCreateService(barbershopId: MaybeRefOrGetter<string>) {
   })
 }
 
-/** R10: gerente convida por e-mail. Sem lista de enviados nesta fatia (cancelar entra na #11). */
+export const sentInvitationsQueryKey = (barbershopId: string) => ['barbershops', barbershopId, 'invitations'] as const
+
+/** R10: gerente convida por e-mail; o convite entra na lista de pendentes. */
 export function useInviteToBarbershop(barbershopId: MaybeRefOrGetter<string>) {
+  const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (input: CreateInvitationRequest) => inviteToBarbershop(toValue(barbershopId), input),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: sentInvitationsQueryKey(toValue(barbershopId)) }),
+  })
+}
+
+/** R13: convites pendentes enviados pela barbearia (visão do gerente). */
+export function useSentInvitations(barbershopId: MaybeRefOrGetter<string>) {
+  return useQuery({
+    queryKey: computed(() => sentInvitationsQueryKey(toValue(barbershopId))),
+    queryFn: ({ signal }) => fetchSentInvitations(toValue(barbershopId), signal),
+  })
+}
+
+export function useCancelInvitation(barbershopId: MaybeRefOrGetter<string>) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (invitationId: string) => cancelInvitation(toValue(barbershopId), invitationId),
+    // Mesmo se falhar (ex.: já recusado ou expirado), a lista é recarregada para mostrar o estado atual.
+    onSettled: () => queryClient.invalidateQueries({ queryKey: sentInvitationsQueryKey(toValue(barbershopId)) }),
   })
 }
 
@@ -96,10 +120,20 @@ export function useReceivedInvitations(enabled: MaybeRefOrGetter<boolean>) {
   })
 }
 
+/** R13: o convidado recusa; a lista é recarregada mesmo se o convite já tiver mudado de estado. */
+export function useDeclineInvitation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (invitationId: string) => declineInvitation(invitationId),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: receivedInvitationsQueryKey }),
+  })
+}
+
 export function useAcceptInvitation() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (invitationId: string) => acceptInvitation(invitationId),
+    mutationFn: ({ invitationId, confirmLeave }: { invitationId: string; confirmLeave?: boolean }) =>
+      acceptInvitation(invitationId, confirmLeave),
     onSuccess: async (accepted) => {
       // Novo perfil: a lista de convites, a barbearia e os perfis do /me mudam.
       await Promise.all([
