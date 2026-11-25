@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/server.ts",
+    "dev": "node --watch --import tsx src/server.ts",
     "build": "prisma generate && tsup",
     "start": "node --enable-source-maps dist/server.js",
     "typecheck": "prisma generate && tsc --noEmit",
