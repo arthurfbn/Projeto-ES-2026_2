@@ -9,8 +9,8 @@ export type WeeklyWindow = { weekday: number; startMinute: number; endMinute: nu
 const STEP_MINUTES = 15
 const MINUTES_IN_DAY = 24 * 60
 
-/** Início < fim, no mesmo dia (fim pode ser 24:00), de 15 em 15 minutos. */
-function isValidWindow({ weekday, startMinute, endMinute }: WeeklyWindow): boolean {
+/** Início < fim, no mesmo dia (fim pode ser 24:00), de 15 em 15 minutos (R15, R18). */
+export function isValidWindow({ weekday, startMinute, endMinute }: WeeklyWindow): boolean {
   const onStep = (minute: number) => Number.isInteger(minute) && minute % STEP_MINUTES === 0
   return (
     Number.isInteger(weekday) &&
@@ -33,7 +33,8 @@ function hasOverlap(sorted: WeeklyWindow[]): boolean {
   })
 }
 
-const fitsIn = (inner: WeeklyWindow, outer: WeeklyWindow) =>
+/** A janela `inner` cabe inteira em `outer`, no mesmo dia (R19, R21). */
+export const fitsIn = (inner: WeeklyWindow, outer: WeeklyWindow) =>
   inner.weekday === outer.weekday && inner.startMinute >= outer.startMinute && inner.endMinute <= outer.endMinute
 
 /**
