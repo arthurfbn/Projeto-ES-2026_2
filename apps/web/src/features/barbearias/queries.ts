@@ -4,6 +4,7 @@ import type {
   CreateBarbershopRequest,
   CreateInvitationRequest,
   CreateServiceRequest,
+  SetBarberServiceRequest,
   UpdateMembershipRequest,
   UpdateServiceRequest,
   WeeklyWindow,
@@ -15,6 +16,7 @@ import {
   cancelInvitation,
   createBarbershop,
   createService,
+  fetchBarberServices,
   declineInvitation,
   fetchBarbershop,
   fetchMemberships,
@@ -23,6 +25,8 @@ import {
   fetchSentInvitations,
   fetchServices,
   inviteToBarbershop,
+  removeBarberService,
+  setBarberService,
   updateMembership,
   updateService,
   updateShift,
@@ -179,5 +183,35 @@ export function useUpdateMembership(barbershopId: MaybeRefOrGetter<string>) {
     mutationFn: ({ membershipId, patch }: { membershipId: string; patch: UpdateMembershipRequest }) =>
       updateMembership(toValue(barbershopId), membershipId, patch),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: membershipsQueryKey(toValue(barbershopId)) }),
+  })
+}
+
+export const barberServicesQueryKey = (barbershopId: string, membershipId: string) =>
+  ['barbershops', barbershopId, 'memberships', membershipId, 'services'] as const
+
+/** Serviços que o barbeiro realiza na barbearia, com o preço e a duração que valem para ele (R16). */
+export function useBarberServices(barbershopId: MaybeRefOrGetter<string>, membershipId: MaybeRefOrGetter<string>) {
+  return useQuery({
+    queryKey: computed(() => barberServicesQueryKey(toValue(barbershopId), toValue(membershipId))),
+    queryFn: ({ signal }) => fetchBarberServices(toValue(barbershopId), toValue(membershipId), signal),
+  })
+}
+
+export function useSetBarberService(barbershopId: MaybeRefOrGetter<string>, membershipId: MaybeRefOrGetter<string>) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ serviceId, input }: { serviceId: string; input: SetBarberServiceRequest }) =>
+      setBarberService(toValue(barbershopId), toValue(membershipId), serviceId, input),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: barberServicesQueryKey(toValue(barbershopId), toValue(membershipId)) }),
+  })
+}
+
+export function useRemoveBarberService(barbershopId: MaybeRefOrGetter<string>, membershipId: MaybeRefOrGetter<string>) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (serviceId: string) => removeBarberService(toValue(barbershopId), toValue(membershipId), serviceId),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: barberServicesQueryKey(toValue(barbershopId), toValue(membershipId)) }),
   })
 }

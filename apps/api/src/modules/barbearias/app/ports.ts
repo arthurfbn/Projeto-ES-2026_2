@@ -161,11 +161,40 @@ export interface AvailabilityReader {
   weeklyWindows(input: { barbershopId: string; userId: string }): Promise<WeeklyWindow[]>
 }
 
+/** Serviço do barbeiro com o padrão do serviço ao lado, para calcular o que vale (R16). */
+export type BarberServiceRecord = {
+  serviceId: string
+  name: string
+  serviceIsActive: boolean
+  defaultPriceCents: number
+  defaultDurationMinutes: number
+  /** Próprios do barbeiro; null = padrão. */
+  priceCents: number | null
+  durationMinutes: number | null
+}
+
+/** Sempre dentro de uma barbearia e de um vínculo dela. */
+export interface BarberServiceRepository {
+  listByMembership(barbershopId: string, membershipId: string): Promise<BarberServiceRecord[]>
+  find(barbershopId: string, membershipId: string, serviceId: string): Promise<BarberServiceRecord | null>
+  /** Atribui o serviço ao barbeiro ou, se já atribuído, troca os valores próprios. */
+  upsert(input: {
+    barbershopId: string
+    membershipId: string
+    serviceId: string
+    priceCents: number | null
+    durationMinutes: number | null
+  }): Promise<void>
+  /** Devolve false se o barbeiro não realizava o serviço. */
+  remove(barbershopId: string, membershipId: string, serviceId: string): Promise<boolean>
+}
+
 export type BarbershopPorts = {
   barbershops: BarbershopRepository
   services: ServiceRepository
   invitations: InvitationRepository
   memberships: MembershipRepository
+  barberServices: BarberServiceRepository
   availability: AvailabilityReader
   users: UserDirectory
   clock: Clock

@@ -1,5 +1,7 @@
 import {
   acceptInvitationResponseSchema,
+  barberServiceListResponseSchema,
+  barberServiceResponseSchema,
   barbershopResponseSchema,
   membershipListResponseSchema,
   membershipResponseSchema,
@@ -10,6 +12,7 @@ import {
   serviceListResponseSchema,
   serviceResponseSchema,
   type AcceptInvitationResponse,
+  type BarberService,
   type BarbershopResponse,
   type CreateBarbershopRequest,
   type CreateInvitationRequest,
@@ -20,11 +23,13 @@ import {
   type SentInvitation,
   type SentInvitationResponse,
   type Service,
+  type SetBarberServiceRequest,
   type UpdateMembershipRequest,
   type UpdateServiceRequest,
   type WeeklyWindow,
 } from '@shavey/contracts'
-import { apiGet, apiPatch, apiPost, apiPostEmpty, apiPut } from '@/lib/http'
+
+import { apiDelete, apiGet, apiPatch, apiPost, apiPostEmpty, apiPut } from '@/lib/http'
 
 export function createBarbershop(input: CreateBarbershopRequest): Promise<BarbershopResponse> {
   return apiPost('/barbershops', input, barbershopResponseSchema)
@@ -100,6 +105,32 @@ export async function updateMembership(
 ): Promise<Membership> {
   const path = `${membershipsPath(barbershopId)}/${encodeURIComponent(membershipId)}`
   return (await apiPatch(path, patch, membershipResponseSchema)).membership
+}
+
+const barberServicesPath = (barbershopId: string, membershipId: string) =>
+  `${membershipsPath(barbershopId)}/${encodeURIComponent(membershipId)}/services`
+
+export async function fetchBarberServices(
+  barbershopId: string,
+  membershipId: string,
+  signal?: AbortSignal,
+): Promise<BarberService[]> {
+  return (await apiGet(barberServicesPath(barbershopId, membershipId), barberServiceListResponseSchema, { signal }))
+    .services
+}
+
+export async function setBarberService(
+  barbershopId: string,
+  membershipId: string,
+  serviceId: string,
+  input: SetBarberServiceRequest,
+): Promise<BarberService> {
+  const path = `${barberServicesPath(barbershopId, membershipId)}/${encodeURIComponent(serviceId)}`
+  return (await apiPut(path, input, barberServiceResponseSchema)).service
+}
+
+export function removeBarberService(barbershopId: string, membershipId: string, serviceId: string): Promise<void> {
+  return apiDelete(`${barberServicesPath(barbershopId, membershipId)}/${encodeURIComponent(serviceId)}`)
 }
 
 /** Página do vínculo, vista pelo próprio barbeiro (ADR-0022). */
