@@ -26,7 +26,7 @@ Usuário, Perfil, Visão, Cliente, Barbeiro, Gerente, Barbearia, Convite, Víncu
 
 **Convites e vínculos (ADR-0018)**
 - R10. Só gerente convida, informando e-mail e tipo (barbeiro ou gerente); convite de barbeiro diz se o vínculo é exclusivo. O e-mail precisa ser de usuário cadastrado.
-- R11. Não convida quem já tem aquele perfil na barbearia, nem repete convite pendente para o mesmo e-mail e tipo.
+- R11. Não convida quem já tem aquele perfil na barbearia, nem repete convite pendente (não expirado) para o mesmo e-mail e tipo. Quem tem vínculo **inativo** nesta barbearia não recebe convite de barbeiro: o gerente reativa o vínculo na Equipe (decidido em 23/11).
 - R12. Convite pendente expira 7 dias após criado. Estados: pendente → aceito | recusado | cancelado | expirado.
 - R13. Só o convidado aceita ou recusa; só gerente da barbearia cancela. Só convite pendente e não expirado muda de estado.
 - R14. Aceitar convite de gerente cria a gerência. Aceitar convite de barbeiro cria o vínculo: data de contratação = data do aceite, aprovado por = gerente que convidou, ativo, aceitando agendamentos, exclusividade = a proposta no convite.

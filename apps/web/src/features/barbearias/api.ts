@@ -7,6 +7,7 @@ import {
   membershipResponseSchema,
   ownMembershipResponseSchema,
   receivedInvitationListResponseSchema,
+  sentInvitationListResponseSchema,
   sentInvitationResponseSchema,
   serviceListResponseSchema,
   serviceResponseSchema,
@@ -19,6 +20,7 @@ import {
   type Membership,
   type OwnMembership,
   type ReceivedInvitation,
+  type SentInvitation,
   type SentInvitationResponse,
   type Service,
   type SetBarberServiceRequest,
@@ -26,7 +28,8 @@ import {
   type UpdateServiceRequest,
   type WeeklyWindow,
 } from '@shavey/contracts'
-import { apiDelete, apiGet, apiPatch, apiPost, apiPut } from '@/lib/http'
+
+import { apiDelete, apiGet, apiPatch, apiPost, apiPostEmpty, apiPut } from '@/lib/http'
 
 export function createBarbershop(input: CreateBarbershopRequest): Promise<BarbershopResponse> {
   return apiPost('/barbershops', input, barbershopResponseSchema)
@@ -58,8 +61,25 @@ export async function fetchReceivedInvitations(signal?: AbortSignal): Promise<Re
   return (await apiGet('/invitations', receivedInvitationListResponseSchema, { signal })).invitations
 }
 
-export function acceptInvitation(invitationId: string): Promise<AcceptInvitationResponse> {
-  return apiPost(`/invitations/${encodeURIComponent(invitationId)}/accept`, {}, acceptInvitationResponseSchema)
+const invitationPath = (invitationId: string) => `/invitations/${encodeURIComponent(invitationId)}`
+
+/** R14c: `confirmLeave` confirma a saída das outras barbearias num convite exclusivo. */
+export function acceptInvitation(invitationId: string, confirmLeave = false): Promise<AcceptInvitationResponse> {
+  return apiPost(`${invitationPath(invitationId)}/accept`, { confirmLeave }, acceptInvitationResponseSchema)
+}
+
+export function declineInvitation(invitationId: string): Promise<void> {
+  return apiPostEmpty(`${invitationPath(invitationId)}/decline`)
+}
+
+const sentInvitationsPath = (barbershopId: string) => `/barbershops/${encodeURIComponent(barbershopId)}/invitations`
+
+export async function fetchSentInvitations(barbershopId: string, signal?: AbortSignal): Promise<SentInvitation[]> {
+  return (await apiGet(sentInvitationsPath(barbershopId), sentInvitationListResponseSchema, { signal })).invitations
+}
+
+export function cancelInvitation(barbershopId: string, invitationId: string): Promise<void> {
+  return apiPostEmpty(`${sentInvitationsPath(barbershopId)}/${encodeURIComponent(invitationId)}/cancel`)
 }
 
 export async function updateService(barbershopId: string, serviceId: string, patch: UpdateServiceRequest): Promise<Service> {

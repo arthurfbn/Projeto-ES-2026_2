@@ -4,10 +4,13 @@ import type { WeeklyWindow } from '../core/allowed-shift'
 import type { BarbershopCreationPlan } from '../core/barbershop-creation'
 import type {
   InvitationAcceptancePlan,
+  InvitationClosing,
   InvitationKind,
+  InvitationRecord,
   InvitationStatus,
+  InviteeSituation,
   NewInvitation,
-  PendingInvitation,
+  OtherMembership,
 } from '../core/invitation'
 
 export type BarbershopRecord = {
@@ -85,15 +88,38 @@ export type ReceivedInvitationRecord = {
   expiresAt: Date
 }
 
+/** Convite pendente visto pelo gerente na lista de enviados (para cancelar). */
+export type PendingSentInvitationRecord = {
+  id: string
+  inviteeUserId: string
+  kind: InvitationKind
+  isExclusive: boolean
+  expiresAt: Date
+}
+
+/**
+ * Convites. "Pendente" nas listas e na checagem de duplicidade é sempre pendente **e não
+ * expirado** em `now` (R12: a expiração é decidida no momento de agir, sem job).
+ */
 export interface InvitationRepository {
   create(invitation: NewInvitation): Promise<SentInvitationRecord>
-  findById(invitationId: string): Promise<PendingInvitation | null>
-  listPendingForInvitee(userId: string): Promise<ReceivedInvitationRecord[]>
+  findById(invitationId: string): Promise<InvitationRecord | null>
+  /** R11: o que o convidado já tem nesta barbearia (gerência, vínculo, convites pendentes). */
+  findInviteeSituation(barbershopId: string, userId: string, now: Date): Promise<InviteeSituation>
+  listPendingForInvitee(userId: string, now: Date): Promise<ReceivedInvitationRecord[]>
+  listPendingForBarbershop(barbershopId: string, now: Date): Promise<PendingSentInvitationRecord[]>
+  /** R14b, R14c: vínculos ativos do usuário em outras barbearias. */
+  activeMembershipsElsewhere(userId: string, barbershopId: string): Promise<OtherMembership[]>
   /**
-   * Marca o convite como aceito e cria a gerência ou o vínculo, numa transação.
-   * Devolve false (sem gravar nada) se o convite deixou de estar pendente no meio do caminho.
+   * Marca o convite como aceito, cria a gerência ou o vínculo e desativa os vínculos que o plano
+   * manda (R14c), numa transação. Devolve false (sem gravar nada) se o convite deixou de estar
+   * pendente no meio do caminho.
    */
   accept(plan: InvitationAcceptancePlan): Promise<boolean>
+  /** Recusa ou cancela, só se ainda pendente. Devolve false se outra ação chegou antes. */
+  close(closing: InvitationClosing): Promise<boolean>
+  /** Grava como expirado o convite pendente que passou da validade. */
+  markExpired(invitationId: string): Promise<void>
 }
 
 export type MembershipRecord = {

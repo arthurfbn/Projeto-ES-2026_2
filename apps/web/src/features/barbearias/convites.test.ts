@@ -59,6 +59,8 @@ function managerApi(respond: (body: unknown) => Response) {
     http.get('*/api/invitations', () => HttpResponse.json({ invitations: [] })),
     http.get(`*/api/barbershops/${shopId}`, () => HttpResponse.json(shop({ manager: true, barber: false }))),
     http.get(`*/api/barbershops/${shopId}/services`, () => HttpResponse.json({ services: [] })),
+    http.get(`*/api/barbershops/${shopId}/memberships`, () => HttpResponse.json({ memberships: [] })),
+    http.get(invitationsUrl, () => HttpResponse.json({ invitations: [] })),
     http.post(invitationsUrl, async ({ request }) => {
       const body = await request.json()
       calls.push(body)
@@ -238,5 +240,157 @@ describe('convidado vê e aceita convites ao entrar (R14)', () => {
     await waitUntil(() => wrapper.text().includes('Criar conta'))
 
     expect(asked).toBe(false)
+  })
+})
+
+describe('gerente acompanha e cancela convites (R11, R13)', () => {
+  it('CA11: convite repetido mostra o erro no campo', async () => {
+    managerApi(() =>
+      HttpResponse.json(
+        {
+          error: 'ALREADY_INVITED',
+          message: 'Esta pessoa já tem um convite pendente deste tipo aqui.',
+          fields: { email: 'Esta pessoa já tem um convite pendente deste tipo aqui.' },
+        },
+        { status: 409 },
+      ),
+    )
+    const { wrapper } = await renderRoute(`/barbearias/${shopId}`)
+    await waitUntil(() => wrapper.text().includes('Enviar convite'))
+
+    await input(wrapper, 'E-mail de quem você quer convidar').setValue('leo@exemplo.com')
+    await wrapper.get('form[aria-label="Convidar para a equipe"]').trigger('submit')
+
+    await waitUntil(() => wrapper.text().includes('Esta pessoa já tem um convite pendente deste tipo aqui.'))
+  })
+
+  it('CA13: lista os pendentes e cancelar tira o convite da lista', async () => {
+    let pending = [
+      {
+        id: '7a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d',
+        invitee: { name: 'Léo Tesoura' },
+        kind: 'barber',
+        isExclusive: true,
+        expiresAt: '2026-11-28T13:00:00.000Z',
+      },
+    ]
+    const canceled: string[] = []
+    managerApi(sentBarber)
+    server.use(
+      http.get(invitationsUrl, () => HttpResponse.json({ invitations: pending })),
+      http.post(`${invitationsUrl}/:invitationId/cancel`, ({ params }) => {
+        canceled.push(String(params.invitationId))
+        pending = []
+        return new HttpResponse(null, { status: 204 })
+      }),
+    )
+    const { wrapper } = await renderRoute(`/barbearias/${shopId}`)
+    await waitUntil(() => wrapper.find('[data-testid="sent-invitations"]').exists())
+
+    expect(wrapper.get('[data-testid="sent-invitations"]').text()).toContain(
+      'Léo Tesoura',
+    )
+    expect(wrapper.get('[data-testid="sent-invitations"]').text()).toContain('Barbeiro · vínculo exclusivo · vale até 28/11')
+
+    await wrapper.get('button[aria-label="Cancelar convite de Léo Tesoura"]').trigger('click')
+    await waitUntil(() => !wrapper.find('[data-testid="sent-invitations"]').exists())
+
+    expect(canceled).toEqual(['7a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d'])
+  })
+})
+
+describe('convidado recusa e confirma saída (R12, R13, R14c)', () => {
+  function inviteeApi(invitation: ReceivedInvitation = pendingInvitation) {
+    let invitations = [invitation]
+    const calls: Array<{ action: string; body?: unknown }> = []
+    server.use(
+      http.get('*/api/me', () => HttpResponse.json(ze)),
+      http.get('*/api/invitations', () => HttpResponse.json({ invitations })),
+      http.post('*/api/invitations/:invitationId/decline', () => {
+        calls.push({ action: 'decline' })
+        invitations = []
+        return new HttpResponse(null, { status: 204 })
+      }),
+    )
+    return { calls, clear: () => (invitations = []) }
+  }
+
+  it('CA13: recusar tira o convite da lista e confirma', async () => {
+    const { calls } = inviteeApi()
+    const { wrapper } = await renderRoute('/')
+    await waitUntil(() => wrapper.find('[data-testid="invitation-list"]').exists())
+
+    await wrapper.get('button[aria-label="Recusar convite de Barbearia do Zé"]').trigger('click')
+    await waitUntil(() => wrapper.text().includes('Convite de Barbearia do Zé recusado.'))
+
+    expect(calls).toEqual([{ action: 'decline' }])
+    expect(wrapper.find('[data-testid="invitation-list"]').exists()).toBe(false)
+  })
+
+  it('CA9c: convite exclusivo lista de onde sai; "Agora não" não muda nada; "Sair e aceitar" confirma', async () => {
+    const { clear } = inviteeApi()
+    const bodies: unknown[] = []
+    server.use(
+      http.post('*/api/invitations/:invitationId/accept', async ({ request }) => {
+        const body = (await request.json()) as { confirmLeave: boolean }
+        bodies.push(body)
+        if (!body.confirmLeave) {
+          return HttpResponse.json(
+            {
+              error: 'LEAVE_CONFIRMATION_REQUIRED',
+              message: 'Este vínculo é exclusivo: para aceitar, você sai das outras barbearias.',
+              barbershops: [
+                { id: '1c7a7b63-7b9f-4a8f-8e54-3b4d2c1e0f22', name: 'Barbearia A' },
+                { id: '2d8b8c74-8c0f-4b9f-9f65-4c5e3d2f1a33', name: 'Barbearia B' },
+              ],
+            },
+            { status: 409 },
+          )
+        }
+        clear()
+        return HttpResponse.json({ barbershopId: shopId, kind: 'barber' })
+      }),
+    )
+    const { wrapper } = await renderRoute('/')
+    await waitUntil(() => wrapper.find('[data-testid="invitation-list"]').exists())
+
+    const acceptButton = () => wrapper.get('button[aria-label="Aceitar convite de Barbearia do Zé"]')
+    await acceptButton().trigger('click')
+    await waitUntil(() => wrapper.find('[data-testid="leave-confirmation"]').exists())
+    expect(wrapper.get('[data-testid="leave-confirmation"]').text()).toContain(
+      'Para aceitar, você sai de Barbearia A e Barbearia B',
+    )
+
+    const button = (text: string) => wrapper.findAll('button').find((b) => b.text() === text)
+    await button('Agora não')?.trigger('click')
+    expect(wrapper.find('[data-testid="leave-confirmation"]').exists()).toBe(false)
+
+    await acceptButton().trigger('click')
+    await waitUntil(() => wrapper.find('[data-testid="leave-confirmation"]').exists())
+    await button('Sair e aceitar')?.trigger('click')
+    await waitUntil(() => wrapper.text().includes('Convite aceito.'))
+
+    expect(bodies).toEqual([{ confirmLeave: false }, { confirmLeave: false }, { confirmLeave: true }])
+  })
+
+  it('CA12: convite expirado mostra o aviso e some da lista', async () => {
+    const { clear } = inviteeApi()
+    server.use(
+      http.post('*/api/invitations/:invitationId/accept', () => {
+        clear()
+        return HttpResponse.json(
+          { error: 'INVITATION_EXPIRED', message: 'Este convite expirou. Peça um novo convite ao gerente.' },
+          { status: 409 },
+        )
+      }),
+    )
+    const { wrapper } = await renderRoute('/')
+    await waitUntil(() => wrapper.find('[data-testid="invitation-list"]').exists())
+
+    await wrapper.get('button[aria-label="Aceitar convite de Barbearia do Zé"]').trigger('click')
+    await waitUntil(() => wrapper.text().includes('Este convite expirou.'))
+    await waitUntil(() => !wrapper.find('[data-testid="invitation-list"]').exists())
+
+    expect(wrapper.get('[role="alert"]').text()).toBe('Este convite expirou. Peça um novo convite ao gerente.')
   })
 })
