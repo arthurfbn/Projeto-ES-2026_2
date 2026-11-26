@@ -29,6 +29,22 @@ Carrossel no Início com os vínculos de barbeiro do usuário. Tocar abre a pág
 Tela do gerente para uma barbearia: dados, serviços, equipe, convites (e, depois, regras de comissão e o **Painel**).
 _Evitar_: painel de admin, admin, visão de gerente
 
+**Busca** (Search)
+Campo no Início, para quem entrou, que acha barbearias **agendáveis** por nome, bairro ou cidade (sem diferenciar maiúsculas nem acentos). Abaixo dela ficam os **serviços da plataforma**: chips com os nomes dos serviços ativos e agendáveis, agrupados pelo nome normalizado ("Corte", "Barba"); tocar num chip lista as barbearias que o oferecem (spec 003).
+
+**Barbearia agendável** (Bookable barbershop)
+Barbearia com ao menos um barbeiro de vínculo ativo, aceitando agendamentos, que realiza ao menos um serviço ativo. Só ela aparece na busca e nos chips.
+
+**Página da barbearia** (Barbershop page)
+O que o cliente vê de uma barbearia: endereço, serviços agendáveis e os barbeiros que os realizam, com preço e duração de cada um. É de onde se agenda. Diferente da **Gestão da barbearia**, que é do gerente.
+_Evitar_: vitrine, perfil da barbearia
+
+**Recentes** (Recent barbershops)
+Carrossel no Início com as barbearias onde o cliente já agendou, da mais recente para a mais antiga. Favoritar barbearia fica para depois.
+
+**Agenda** (Schedule)
+Item da navbar com os agendamentos do usuário: os que ele marcou **como cliente** e os que ele atende **como barbeiro**, sempre com diferença visual nítida entre os dois. "Meus agendamentos", no Início, abre a Agenda só com os de cliente.
+
 **Cliente** (Client)
 Perfil de quem agenda e recebe serviços em qualquer barbearia.
 _Evitar_: customer, consumidor
@@ -91,7 +107,10 @@ _Evitar_: procedimento, produto
 Indica que um barbeiro realiza um serviço naquela barbearia, com **preço e duração próprios** opcionais, definidos pelo gerente no vínculo. Sem valor próprio, vale o padrão do serviço.
 
 **Horário livre** (Slot)
-Início possível de um agendamento: múltiplo de 15 minutos, dentro da disponibilidade, ocupando a duração do serviço do barbeiro, sem sobrepor outro agendamento ativo do barbeiro em qualquer barbearia.
+Início possível de um agendamento: múltiplo de 15 minutos, dentro da disponibilidade, ocupando a duração do serviço do barbeiro, sem sobrepor outro agendamento ativo do barbeiro em qualquer barbearia. Só entre **30 minutos a partir de agora** e **30 dias à frente** (spec 003). Só existe para barbeiro com vínculo ativo, aceitando agendamentos, que realiza aquele serviço (ativo).
+
+**Qualquer barbeiro** (Any barber)
+Opção de agendar sem escolher o barbeiro: o cliente vê os horários livres de todos os barbeiros da barbearia que realizam o serviço. Ao escolher um horário, o sistema atribui o barbeiro livre com **menos agendamentos naquele dia, naquela barbearia**; empate → o de menor preço; depois, ordem alfabética. O cliente vê quem foi atribuído e o preço antes de confirmar (ADR-0023).
 
 **Agendamento** (Appointment)
 Reserva de um serviço com um barbeiro, numa barbearia, num intervalo de tempo. Congela preço e duração no momento da reserva (**preço congelado**, `priceSnapshot`). Registra a **forma de pagamento escolhida**: online ou no local.
@@ -122,7 +141,7 @@ Registro de valor pago. Todo pagamento é registrado, inclusive em dinheiro. **O
 _Evitar_: transação, cobrança
 
 **Gorjeta** (Tip)
-Valor extra pago ao barbeiro, separado do preço do serviço; não entra na base de comissão.
+Valor extra pago ao barbeiro, separado do preço do serviço; não entra na base de comissão. Opcional: no **online**, o cliente informa antes de ir ao pagamento e o Stripe cobra preço + gorjeta; **no local**, é registrada ao concluir (ADR-0023).
 
 **Cancelamento** (Cancellation)
 Encerramento de um agendamento antes do atendimento, registrando quem cancelou e quando. Todo cancelamento gera um **aviso** aos gerentes da barbearia.
@@ -158,13 +177,13 @@ Aberta pelo cliente quando declara ter pago no local e o pagamento não foi reco
 ### Remuneração e métricas (ODS 8, meta 8.5)
 
 **Regra de comissão** (CommissionRule)
-Como calcular a comissão do barbeiro numa barbearia: **percentual**, **fixa** (valor por atendimento) ou **escalonada**; geral ou por serviço; sempre com vigência.
+Como calcular a comissão do barbeiro numa barbearia, definida pelo gerente no vínculo: **percentual**, **fixa** (valor por atendimento) ou **escalonada**; **geral** (todos os serviços) ou **por serviço**, qualquer tipo em qualquer escopo; sempre com vigência (início obrigatório, fim opcional), sem sobrepor outra regra do mesmo escopo. Para um atendimento, vale a regra do serviço, se houver; senão, a geral (ADR-0023).
 
 **Comissão escalonada** (Tiered commission)
-Faixas de percentual sobre o **faturamento mensal do barbeiro naquela barbearia** (mês civil, fuso de São Paulo). Cálculo **marginal**: cada parte do valor recebe o percentual da faixa em que cai, como no imposto de renda — passar de faixa nunca diminui o que já foi ganho.
+Faixas de percentual sobre o faturamento do mês civil (fuso de São Paulo). **Geral**: sobre o **faturamento mensal do barbeiro naquela barbearia**, todos os serviços inclusive os que têm regra própria. **Por serviço**: sobre o faturamento mensal só daquele serviço. Cálculo **marginal**: cada parte do valor recebe o percentual da faixa em que cai, como no imposto de renda — passar de faixa nunca diminui o que já foi ganho.
 
 **Lançamento de comissão** (CommissionEntry)
-Comissão apurada quando um agendamento é concluído e pago, com a regra aplicada e a base de cálculo.
+Comissão apurada quando um agendamento é concluído e pago, com a regra aplicada e a base de cálculo. Sem regra vigente, o lançamento sai com valor zero e a marca **sem regra**, visível para gerente e barbeiro; criar a regra depois não recalcula o passado.
 _Evitar_: repasse
 
 **Faturamento** (Revenue)

@@ -7,7 +7,7 @@
 O modelo de dados prevê comissão percentual, fixa e escalonada. A escalonada precisa de base e forma de aplicação claras, porque comissão mal definida é exatamente a informalidade que a ODS 8 quer combater.
 
 ## Decisão
-- Base: **faturamento do barbeiro naquela barbearia no mês civil** (fuso America/Sao_Paulo), sem gorjetas.
+- Base: **faturamento do barbeiro naquela barbearia no mês civil** (fuso America/Sao_Paulo), sem gorjetas. (Regra escalonada **por serviço**, do ADR-0023: base = faturamento do mês só daquele serviço.)
 - Aplicação **marginal**: cada parte do faturamento recebe o percentual da faixa em que cai (como imposto de renda). Ex.: faixas 40% até R$ 3.000 e 50% acima; com R$ 3.500 no mês, comissão = 0,40 × 3.000 + 0,50 × 500.
 - Cálculo **incremental por atendimento**: ao concluir e pagar um agendamento, o core recebe o faturamento acumulado do mês antes dele e calcula a comissão só da parte nova, dividindo-a entre faixas se cruzar um limite. Soma dos lançamentos = comissão marginal do mês, sem fechamento mensal nem job.
 - Função pura `tieredCommission({ tiers, monthToDateCents, amountCents })`.
