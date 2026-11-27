@@ -6,7 +6,7 @@ import type { AvailabilityReader, AvailabilityRecord, AvailabilityRepository } f
 
 /** Coluna DATE do Postgres <-> AAAA-MM-DD. O Prisma representa DATE como meia-noite UTC. */
 export const toDbDate = (date: string) => new Date(`${date}T00:00:00Z`)
-const fromDbDate = (date: Date) => date.toISOString().slice(0, 10)
+export const fromDbDate = (date: Date) => date.toISOString().slice(0, 10)
 
 const availabilitySelect = {
   id: true,
