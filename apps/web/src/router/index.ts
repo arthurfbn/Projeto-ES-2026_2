@@ -41,6 +41,13 @@ export function createAppRouter(queryClient: QueryClient, history: RouterHistory
         meta: { requiresAuth: true },
       },
       {
+        // Página da barbearia (visão do cliente); a rota acima é a Gestão da barbearia.
+        path: '/barbearias/:barbershopId/pagina',
+        name: 'barbershop-page',
+        component: () => import('@/features/barbearias/pages/BarbershopPublicPage.vue'),
+        meta: { requiresAuth: true },
+      },
+      {
         path: '/vinculos/:membershipId',
         name: 'membership',
         component: () => import('@/features/barbearias/pages/MembershipPage.vue'),

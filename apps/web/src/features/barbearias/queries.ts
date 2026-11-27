@@ -1,6 +1,7 @@
 import { computed, toValue, type MaybeRefOrGetter } from 'vue'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
 import type {
+  BarbershopSearchQuery,
   CreateAvailabilityRequest,
   CreateBarbershopRequest,
   CreateInvitationRequest,
@@ -22,7 +23,10 @@ import {
   fetchBarberServices,
   declineInvitation,
   fetchBarbershop,
+  fetchBarbershopPage,
   fetchMemberships,
+  fetchPlatformServices,
+  searchBarbershops,
   fetchOwnMembership,
   fetchReceivedInvitations,
   fetchSentInvitations,
@@ -43,6 +47,28 @@ export function useBarbershop(barbershopId: MaybeRefOrGetter<string>) {
   return useQuery({
     queryKey: computed(() => barbershopQueryKey(toValue(barbershopId))),
     queryFn: ({ signal }) => fetchBarbershop(toValue(barbershopId), signal),
+    retry: (failureCount, error) => !(error instanceof ApiError && error.status === 404) && failureCount < 2,
+  })
+}
+
+/** R1, R2: busca só vai à API com texto ou chip escolhido. */
+export function useBarbershopSearch(query: MaybeRefOrGetter<BarbershopSearchQuery>) {
+  return useQuery({
+    queryKey: computed(() => ['barbershop-search', toValue(query)] as const),
+    queryFn: ({ signal }) => searchBarbershops(toValue(query), signal),
+    enabled: computed(() => Boolean(toValue(query).q || toValue(query).service)),
+  })
+}
+
+export function usePlatformServices() {
+  return useQuery({ queryKey: ['platform-services'], queryFn: ({ signal }) => fetchPlatformServices(signal) })
+}
+
+/** R3: página da barbearia. 404 não é tentado de novo. */
+export function useBarbershopPage(barbershopId: MaybeRefOrGetter<string>) {
+  return useQuery({
+    queryKey: computed(() => ['barbershop-page', toValue(barbershopId)] as const),
+    queryFn: ({ signal }) => fetchBarbershopPage(toValue(barbershopId), signal),
     retry: (failureCount, error) => !(error instanceof ApiError && error.status === 404) && failureCount < 2,
   })
 }
