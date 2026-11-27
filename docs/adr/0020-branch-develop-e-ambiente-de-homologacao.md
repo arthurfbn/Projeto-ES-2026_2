@@ -7,7 +7,7 @@
 O ADR-0009 previa trunk-based: toda fatia entrava direto na `main`, que é produção. Com os dois desenvolvendo em paralelo a partir da semana 1, queremos validar as fatias juntas (inclusive com banco e deploy reais) antes de chegarem à produção usada na demo, sem que uma fatia em teste derrube o que já está apresentável.
 
 ## Decisão
-- **`develop`** é a branch de integração: toda fatia sai dela (`feat/<issue>-<descricao>`) e volta para ela por PR com CI verde (Ship/Show/Ask como no ADR-0009; squash merge).
+- **`develop`** é a branch de integração: toda fatia sai dela (`feat/<issue>-<descricao>`) e volta para ela por PR com CI verde (Ship/Show/Ask como no ADR-0009; merge commit, que preserva os commits da fatia — ajustado em 2026-11-27, antes dizia squash).
 - **`main`** é a branch principal (padrão do GitHub) e é produção: recebe a `develop` validada numa **release** (PR `develop → main`, merge commit), no mínimo antes de cada demo semanal.
 - **Correção urgente em produção:** branch `fix/...` a partir da `main`, PR para a `main` e, em seguida, `main` mergeada de volta na `develop`.
 - **Ambientes:**
