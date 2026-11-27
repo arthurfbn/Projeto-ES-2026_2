@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import AppShell from '@/components/AppShell.vue'
 import { ApiError } from '@/lib/http'
 import { formatCep } from '@/lib/masks'
 import { formatCents } from '@/lib/money'
+import BookingPanel from '../components/BookingPanel.vue'
 import { useBarbershopPage } from '../queries'
 
 /**
@@ -14,6 +15,9 @@ import { useBarbershopPage } from '../queries'
 const route = useRoute()
 const barbershopId = computed(() => String(route.params.barbershopId))
 const { data, isPending, isError, error, refetch } = useBarbershopPage(barbershopId)
+
+/** Serviço com o painel de agendar aberto (um por vez). */
+const bookingServiceId = ref<string | null>(null)
 
 const notFound = computed(() => error.value instanceof ApiError && error.value.status === 404)
 </script>
@@ -91,9 +95,25 @@ const notFound = computed(() => error.value instanceof ApiError && error.value.s
             :key="service.id"
             class="flex flex-col gap-3 rounded-xl border bg-card p-4"
           >
-            <h3 class="font-display text-lg font-extrabold">
-              {{ service.name }}
-            </h3>
+            <div class="flex items-center justify-between gap-3">
+              <h3 class="font-display text-lg font-extrabold">
+                {{ service.name }}
+              </h3>
+              <button
+                v-if="bookingServiceId !== service.id"
+                type="button"
+                class="h-10 rounded-md bg-primary px-4 font-display font-extrabold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                @click="bookingServiceId = service.id"
+              >
+                Agendar
+              </button>
+            </div>
+            <BookingPanel
+              v-if="bookingServiceId === service.id"
+              :barbershop-id="barbershopId"
+              :service="service"
+              @close="bookingServiceId = null"
+            />
             <ul
               class="flex flex-col divide-y"
               :aria-label="`Barbeiros que fazem ${service.name}`"

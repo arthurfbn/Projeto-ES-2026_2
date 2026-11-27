@@ -1,5 +1,10 @@
 import {
   acceptInvitationResponseSchema,
+  appointmentResponseSchema,
+  slotsResponseSchema,
+  type AppointmentResponse,
+  type CreateAppointmentRequest,
+  type SlotsResponse,
   availabilityListResponseSchema,
   availabilityResponseSchema,
   barberServiceListResponseSchema,
@@ -64,6 +69,22 @@ export async function searchBarbershops(
 /** R2: chips dos serviços da plataforma. */
 export async function fetchPlatformServices(signal?: AbortSignal): Promise<PlatformService[]> {
   return (await apiGet('/platform-services', platformServicesResponseSchema, { signal })).services
+}
+
+/** R5–R8: horários livres do serviço num dia; sem `membershipId` = "qualquer barbeiro". */
+export function fetchSlots(
+  input: { barbershopId: string; serviceId: string; date: string; membershipId?: string },
+  signal?: AbortSignal,
+): Promise<SlotsResponse> {
+  const params = new URLSearchParams({ date: input.date })
+  if (input.membershipId) params.set('membershipId', input.membershipId)
+  const path = `/barbershops/${encodeURIComponent(input.barbershopId)}/services/${encodeURIComponent(input.serviceId)}/slots`
+  return apiGet(`${path}?${params}`, slotsResponseSchema, { signal })
+}
+
+/** R9–R11: agenda pagando no local. */
+export function createAppointment(barbershopId: string, input: CreateAppointmentRequest): Promise<AppointmentResponse> {
+  return apiPost(`/barbershops/${encodeURIComponent(barbershopId)}/appointments`, input, appointmentResponseSchema)
 }
 
 /** R3: página da barbearia, a visão do cliente (diferente da Gestão). */

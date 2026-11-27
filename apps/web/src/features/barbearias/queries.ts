@@ -2,6 +2,7 @@ import { computed, toValue, type MaybeRefOrGetter } from 'vue'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
 import type {
   BarbershopSearchQuery,
+  CreateAppointmentRequest,
   CreateAvailabilityRequest,
   CreateBarbershopRequest,
   CreateInvitationRequest,
@@ -25,7 +26,9 @@ import {
   fetchBarbershop,
   fetchBarbershopPage,
   fetchMemberships,
+  createAppointment,
   fetchPlatformServices,
+  fetchSlots,
   searchBarbershops,
   fetchOwnMembership,
   fetchReceivedInvitations,
@@ -62,6 +65,30 @@ export function useBarbershopSearch(query: MaybeRefOrGetter<BarbershopSearchQuer
 
 export function usePlatformServices() {
   return useQuery({ queryKey: ['platform-services'], queryFn: ({ signal }) => fetchPlatformServices(signal) })
+}
+
+/** R5–R8: horários livres; só busca com serviço e dia escolhidos. */
+export function useSlots(
+  input: MaybeRefOrGetter<{ barbershopId: string; serviceId: string; date: string; membershipId?: string } | null>,
+) {
+  return useQuery({
+    queryKey: computed(() => ['slots', toValue(input)] as const),
+    queryFn: ({ signal }) => {
+      const value = toValue(input)
+      if (!value) throw new Error('sem serviço e dia')
+      return fetchSlots(value, signal)
+    },
+    enabled: computed(() => toValue(input) !== null),
+  })
+}
+
+/** R9–R11: ao agendar (ou perder o horário para outro cliente), os horários livres mudam. */
+export function useCreateAppointment(barbershopId: MaybeRefOrGetter<string>) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (input: CreateAppointmentRequest) => createAppointment(toValue(barbershopId), input),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ['slots'] }),
+  })
 }
 
 /** R3: página da barbearia. 404 não é tentado de novo. */
