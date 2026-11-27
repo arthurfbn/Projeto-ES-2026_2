@@ -40,4 +40,11 @@ Comentários com prefixo `bloqueante:`, `sugestão:` ou `dúvida:`.
 ## Merge
 Fatia → `develop`: squash merge com título Conventional Commit; apagar a branch.
 Release `develop` → `main`: PR com merge commit (não squash), CI verde e conferência no ambiente da `develop`; no mínimo antes de cada demo. A `main` é a branch padrão: issues com `Closes #n` fecham na release.
+
+## Versão e release (ADR-0024)
+- Semantic Versioning com tag `vX.Y.Z` e GitHub Release no commit de merge da release na `main`. A tag é a fonte da verdade; `package.json` fica em `0.0.0`.
+- Em `0.x`: release com funcionalidade nova sobe **MINOR**; só correções (inclusive `fix/...` na `main`) sobe **PATCH**. `1.0.0` = versão da apresentação (07/12).
+- Título do PR de release: `release: vX.Y.Z — <resumo>`. Logo após o merge, quem mesclou cria a release:
+  `gh release list` (última versão) → `gh release create vX.Y.Z --target <sha do merge> --title "vX.Y.Z — <resumo>" --notes-file <notas.md> --latest`.
+- Notas em português, agrupadas por assunto, citando os PRs. Acrescente a linha da versão na tabela do ADR-0024.
 `develop` ou `main` quebrada = prioridade zero: reverter primeiro, investigar depois.
