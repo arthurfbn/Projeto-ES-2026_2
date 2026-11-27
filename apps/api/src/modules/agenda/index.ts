@@ -1,13 +1,16 @@
 import type { FastifyInstance, preHandlerAsyncHookHandler } from 'fastify'
 import type { Clock } from '../../shared/clock'
-import { noAppointmentsYet } from './adapters/no-appointments-yet'
-import type { AgendaPorts, AppointmentReader, BarberNames, BookingCatalog } from './app/ports'
+import type { Db } from '../../shared/db/prisma'
+import { createPrismaAppointmentRepository } from './adapters/prisma-appointment-repository'
+import type { AgendaPorts, BarberNames, BookingCatalog } from './app/ports'
+import { registerAppointmentRoutes } from './http/appointment-routes'
 import { registerSlotRoutes } from './http/slot-routes'
 
-/** API pública do módulo agenda (horários livres; agendamentos entram na #45). */
+/** API pública do módulo agenda (horários livres e agendamentos). */
 export type { BookingCatalog, ServiceOffer } from './app/ports'
 
 export type AgendaModuleOptions = {
+  db: Db
   clock: Clock
   /** preHandler do módulo identidade: garante `request.user`. */
   requireUser: preHandlerAsyncHookHandler
@@ -15,14 +18,12 @@ export type AgendaModuleOptions = {
   catalog: BookingCatalog
   /** Do módulo identidade: nomes dos barbeiros. */
   users: BarberNames
-  /** Padrão: nenhum agendamento (a tabela nasce na #45); testes podem trocar. */
-  appointments?: AppointmentReader
 }
 
 export function createAgendaModule(options: AgendaModuleOptions) {
   const ports: AgendaPorts = {
     catalog: options.catalog,
-    appointments: options.appointments ?? noAppointmentsYet,
+    appointments: createPrismaAppointmentRepository(options.db),
     users: options.users,
     clock: options.clock,
   }
@@ -30,6 +31,7 @@ export function createAgendaModule(options: AgendaModuleOptions) {
   return {
     register(app: FastifyInstance) {
       registerSlotRoutes(app, ports, options.requireUser)
+      registerAppointmentRoutes(app, ports, options.requireUser)
     },
   }
 }

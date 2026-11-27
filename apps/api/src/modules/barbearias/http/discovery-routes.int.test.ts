@@ -119,7 +119,7 @@ const namesOf = async (app: App, token: string, query: string) => {
 }
 
 beforeEach(async () => {
-  await db.$executeRaw`TRUNCATE TABLE barber_availabilities, barber_services, allowed_shifts, invitations, services, barber_memberships, barbershop_managers, barbershops, sessions, users CASCADE`
+  await db.$executeRaw`TRUNCATE TABLE appointments, barber_availabilities, barber_services, allowed_shifts, invitations, services, barber_memberships, barbershop_managers, barbershops, sessions, users CASCADE`
 })
 
 afterAll(async () => {

@@ -54,6 +54,7 @@ const app = await buildApp({
       users,
     }),
     createAgendaModule({
+      db,
       clock: systemClock,
       requireUser: identity.requireUser,
       catalog: createBookingCatalog(db),

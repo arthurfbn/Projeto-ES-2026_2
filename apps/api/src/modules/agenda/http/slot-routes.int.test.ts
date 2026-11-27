@@ -34,7 +34,7 @@ async function makeApp() {
     modules: [
       identity,
       createBarbershopsModule({ db, clock, requireUser: identity.requireUser, users }),
-      createAgendaModule({ clock, requireUser: identity.requireUser, catalog: createBookingCatalog(db), users }),
+      createAgendaModule({ db, clock, requireUser: identity.requireUser, catalog: createBookingCatalog(db), users }),
     ],
   })
 }
@@ -119,7 +119,7 @@ async function slotsOf(app: App, token: string, url: string) {
 }
 
 beforeEach(async () => {
-  await db.$executeRaw`TRUNCATE TABLE barber_availabilities, barber_services, allowed_shifts, invitations, services, barber_memberships, barbershop_managers, barbershops, sessions, users CASCADE`
+  await db.$executeRaw`TRUNCATE TABLE appointments, barber_availabilities, barber_services, allowed_shifts, invitations, services, barber_memberships, barbershop_managers, barbershops, sessions, users CASCADE`
 })
 
 afterAll(async () => {

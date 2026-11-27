@@ -9,7 +9,7 @@ const db = createDb(databaseUrl)
 const passwordHash = 'hash-de-teste'
 
 beforeEach(async () => {
-  await db.$executeRaw`TRUNCATE TABLE barber_availabilities, barber_services, allowed_shifts, invitations, services, barber_memberships, barbershop_managers, barbershops, sessions, users CASCADE`
+  await db.$executeRaw`TRUNCATE TABLE appointments, barber_availabilities, barber_services, allowed_shifts, invitations, services, barber_memberships, barbershop_managers, barbershops, sessions, users CASCADE`
 })
 
 afterAll(async () => {
