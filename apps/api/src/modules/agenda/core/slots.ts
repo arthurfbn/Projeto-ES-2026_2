@@ -44,7 +44,13 @@ const weekdayOf = (date: string) => new Date(`${date}T12:00:00Z`).getUTCDay()
 const saoPauloInstant = (date: string, minute: number) =>
   new Date(Date.parse(`${date}T00:00:00-03:00`) + minute * MINUTE_MS)
 
-const isValidOn = (window: AvailabilityWindow, date: string) =>
+/** Início e fim ([from, to)) de um dia do calendário de São Paulo. */
+export const saoPauloDayBounds = (date: string) => ({
+  from: saoPauloInstant(date, 0),
+  to: saoPauloInstant(date, 24 * 60),
+})
+
+const isValidOn =(window: AvailabilityWindow, date: string) =>
   window.weekday === weekdayOf(date) && window.validFrom <= date && (window.validUntil === null || date <= window.validUntil)
 
 const overlapsAny = (startsAt: Date, endsAt: Date, busy: BusyInterval[]) =>
