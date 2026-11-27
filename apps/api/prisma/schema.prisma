@@ -30,6 +30,7 @@ model User {
   approvedMemberships BarberMembership[]  @relation("MembershipApprover")
   receivedInvitations Invitation[]        @relation("InvitationInvitee")
   sentInvitations     Invitation[]        @relation("InvitationInviter")
+  clientAppointments  Appointment[]       @relation("AppointmentClient")
 
   @@map("users")
 }
@@ -107,6 +108,7 @@ model BarberMembership {
 
   barberServices BarberService[]
   availabilities BarberAvailability[]
+  appointments   Appointment[]
 
   @@unique([barbershopId, userId])
   @@unique([id, barbershopId])
@@ -128,6 +130,7 @@ model Service {
   updatedAt       DateTime   @updatedAt @map("updated_at") @db.Timestamptz
 
   barberServices BarberService[]
+  appointments   Appointment[]
 
   @@unique([id, barbershopId])
   @@index([barbershopId])
@@ -232,4 +235,56 @@ model BarberAvailability {
   @@index([membershipId])
   @@index([userId, weekday])
   @@map("barber_availabilities")
+}
+
+// ─── Agenda (spec 003, R9–R11; ADR-0013, ADR-0023) ───────────────────────────
+
+/// Status do agendamento (CONTEXT.md). pending, confirmed e in_progress ocupam o horário.
+enum AppointmentStatus {
+  pending
+  confirmed
+  in_progress
+  completed
+  cancelled
+  no_show
+
+  @@map("appointment_status")
+}
+
+/// Forma de pagamento escolhida ao agendar (ADR-0013): online (Stripe) ou no local.
+enum PaymentMethod {
+  online
+  on_site
+
+  @@map("payment_method")
+}
+
+/// Agendamento (R9): cliente, barbearia, vínculo do barbeiro e serviço, com preço e duração
+/// congelados. As chaves compostas garantem no banco que vínculo e serviço são da barbearia; a
+/// constraint EXCLUDE (migration) impede sobreposição de agendamentos ativos do mesmo barbeiro em
+/// qualquer barbearia (R11).
+model Appointment {
+  id              String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  barbershopId    String            @map("barbershop_id") @db.Uuid
+  clientUserId    String            @map("client_user_id") @db.Uuid
+  client          User              @relation("AppointmentClient", fields: [clientUserId], references: [id], onDelete: Restrict)
+  barberUserId    String            @map("barber_user_id") @db.Uuid
+  membershipId    String            @map("membership_id") @db.Uuid
+  membership      BarberMembership  @relation(fields: [membershipId, barbershopId, barberUserId], references: [id, barbershopId, userId], onDelete: Restrict)
+  serviceId       String            @map("service_id") @db.Uuid
+  service         Service           @relation(fields: [serviceId, barbershopId], references: [id, barbershopId], onDelete: Restrict)
+  startsAt        DateTime          @map("starts_at") @db.Timestamptz
+  endsAt          DateTime          @map("ends_at") @db.Timestamptz
+  /// Preço e duração congelados no momento do agendamento (CA7).
+  priceCents      Int               @map("price_cents")
+  durationMinutes Int               @map("duration_minutes")
+  paymentMethod   PaymentMethod     @map("payment_method")
+  status          AppointmentStatus
+  createdAt       DateTime          @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime          @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@index([barberUserId, startsAt])
+  @@index([barbershopId, startsAt])
+  @@index([clientUserId, startsAt])
+  @@map("appointments")
 }
