@@ -9,6 +9,8 @@ const envSchema = z.object({
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
   DATABASE_URL: z.url(),
   SENTRY_DSN: z.preprocess(emptyToUndefined, z.url().optional()),
+  // Origens extras aceitas em POST/PUT/DELETE, separadas por vírgula (ex.: domínio de produção da Vercel).
+  WEB_ORIGINS: z.string().default(''),
   // Railway injeta o commit do deploy; localmente fica "dev".
   RAILWAY_GIT_COMMIT_SHA: z.string().optional(),
 })
@@ -20,6 +22,7 @@ export type Config = {
   logLevel: string
   databaseUrl: string
   sentryDsn: string | undefined
+  webOrigins: string[]
   version: string
 }
 
@@ -38,6 +41,9 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env): Config {
     logLevel: env.LOG_LEVEL,
     databaseUrl: env.DATABASE_URL,
     sentryDsn: env.SENTRY_DSN,
+    webOrigins: env.WEB_ORIGINS.split(',')
+      .map((origin) => origin.trim())
+      .filter(Boolean),
     version: env.RAILWAY_GIT_COMMIT_SHA?.slice(0, 7) ?? 'dev',
   }
 }

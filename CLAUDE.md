@@ -17,7 +17,7 @@ Shavey: sistema de agendamento e gestão de barbearias. MVP de um produto comerc
 1. Feature nova ou regra ambígua → skill `grill-barbearia` (atualiza `docs/CONTEXT.md` e `docs/adr/`).
 2. Entendimento fechado → skill `spec-e-tickets` (issues no GitHub em fatias verticais).
 3. Implementação → skill `tdd-core` no núcleo de domínio; demais regras nas skills `banco-migrations`, `seguranca-authz`, `pagamentos-stripe`, `frontend-vue`.
-4. Entrega → skill `git-pr` (commit, PR, checagens).
+4. Entrega → skill `git-pr` (commit, PR para a `develop`, checagens). A `main` é produção e só recebe a `develop` validada (ADR-0020).
 Nunca pule do pedido vago direto para código.
 
 ## Marca
@@ -65,7 +65,7 @@ apps/api/src/
 - [ ] `pnpm lint && pnpm typecheck && pnpm test` passando localmente e no CI
 - [ ] Migration incluída (se mexeu no schema) e reversível pelo padrão expand/contract
 - [ ] CONTEXT.md / ADR atualizados se mudou linguagem ou decisão
-- [ ] Preview da Vercel verificado manualmente no fluxo afetado
+- [ ] Preview da Vercel (ou ambiente da `develop`) verificado manualmente no fluxo afetado
 - [ ] PR pequeno, revisado pelo colega (ou Ship/Show justificado)
 
 ## Comandos

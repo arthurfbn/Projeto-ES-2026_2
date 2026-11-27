@@ -15,7 +15,7 @@ Usuário, Perfil, Visão, Cliente, Barbeiro, Gerente, Barbearia, Convite, Víncu
 
 **Perfis e visões**
 - R5. `GET /me` devolve o usuário e seus perfis: cliente, e para cada barbearia se é gerente e/ou barbeiro.
-- R6. A interface alterna visões (cliente; gerente ou barbeiro de uma barbearia). O backend autoriza sempre pelo vínculo, nunca pela visão escolhida.
+- R6. Não há seletor de visão (ADR-0022). Ao entrar, todo usuário vê o **Início**: convites pendentes, **Minhas barbearias** (onde é gerente; abre a Gestão da barbearia) e **Meus vínculos** (abre a página do vínculo, só leitura), em carrosséis, e navbar lateral (barra inferior no celular) com Início, Criar barbearia e Sair. O backend autoriza sempre pelo vínculo/gerência.
 
 **Barbearia**
 - R7. Qualquer usuário cria uma barbearia com nome e endereço estruturado: CEP (8 dígitos), rua, número, complemento (opcional), bairro, cidade, UF (sigla válida).
@@ -26,7 +26,7 @@ Usuário, Perfil, Visão, Cliente, Barbeiro, Gerente, Barbearia, Convite, Víncu
 
 **Convites e vínculos (ADR-0018)**
 - R10. Só gerente convida, informando e-mail e tipo (barbeiro ou gerente); convite de barbeiro diz se o vínculo é exclusivo. O e-mail precisa ser de usuário cadastrado.
-- R11. Não convida quem já tem aquele perfil na barbearia, nem repete convite pendente para o mesmo e-mail e tipo.
+- R11. Não convida quem já tem aquele perfil na barbearia, nem repete convite pendente (não expirado) para o mesmo e-mail e tipo. Quem tem vínculo **inativo** nesta barbearia não recebe convite de barbeiro: o gerente reativa o vínculo na Equipe (decidido em 23/11).
 - R12. Convite pendente expira 7 dias após criado. Estados: pendente → aceito | recusado | cancelado | expirado.
 - R13. Só o convidado aceita ou recusa; só gerente da barbearia cancela. Só convite pendente e não expirado muda de estado.
 - R14. Aceitar convite de gerente cria a gerência. Aceitar convite de barbeiro cria o vínculo: data de contratação = data do aceite, aprovado por = gerente que convidou, ativo, aceitando agendamentos, exclusividade = a proposta no convite.
@@ -43,10 +43,10 @@ Usuário, Perfil, Visão, Cliente, Barbeiro, Gerente, Barbearia, Convite, Víncu
 - R21. Na semana 1, o gerente só altera o turno se nenhuma disponibilidade existente ficar de fora; caso contrário, erro "há disponibilidade fora do novo turno". A proposta de mudança de turno ao barbeiro (ADR-0019) entra na semana 3.
 
 ## Critérios de aceite
-- CA1 (R1, R3) Given visitante, When se cadastra com dados válidos, Then entra logado e vê a visão de cliente.
+- CA1 (R1, R3) Given visitante, When se cadastra com dados válidos, Then entra logado e vê o Início.
 - CA2 (R1) Given e-mail já cadastrado (em qualquer caixa), When tenta se cadastrar, Then recebe "e-mail já cadastrado".
 - CA3 (R3, R4) Given usuário, When erra a senha, Then recebe mensagem genérica; When acerta, Then fica logado; When sai, Then a sessão some do banco e `/me` responde 401.
-- CA4 (R5, R6) Given gerente de A e barbeiro de B, When abre o seletor, Then vê Cliente, Gerente·A e Barbeiro·B; When chama rota de gerente de B, Then 403.
+- CA4 (R5, R6) Given gerente de A e barbeiro de B, When abre o Início, Then vê A em Minhas barbearias e B em Meus vínculos; When toca em A, Then abre a Gestão de A; When toca em B, Then vê o vínculo (contratação, aprovado por, exclusividade, turno); When chama rota de gerente de B, Then 403.
 - CA5 (R7, R8) Given usuário logado, When cria barbearia válida marcando "eu também atendo", Then aparece como gerente e barbeiro dela; sem marcar, só gerente.
 - CA6 (R7) Given CEP com 7 dígitos ou UF inexistente, When envia, Then erro no campo.
 - CA7 (R9) Given gerente, When cria serviço de 20 min, Then erro de duração; When cria de 30 min e R$ 40,00, Then aparece na lista; When desativa, Then aparece como inativo e continua listado para o gerente.
@@ -66,7 +66,7 @@ Usuário, Perfil, Visão, Cliente, Barbeiro, Gerente, Barbearia, Convite, Víncu
 - CA18 (R21) Given turno seg 09:00–18:00 e disponibilidade seg 16:00–18:00, When o gerente muda o turno para seg 09:00–15:00, Then erro e o turno continua o mesmo.
 
 ## Fora de escopo
-Recuperação de senha, verificação de e-mail, login social, notificações por e-mail, busca de endereço por CEP (preenchimento manual), foto/logo da barbearia, sair de uma barbearia ou excluir barbearia, remover gerente, transferir convite, regras de comissão (semana 2), horários livres e agendamento (semana 2), painel geral, avisos, diária, fechamento de agenda e remarcação (semanas 2–3, ADR-0019), retirar exclusividade e permitir diárias num vínculo exclusivo.
+Recuperação de senha, verificação de e-mail, login social, notificações por e-mail, busca de endereço por CEP (entrou depois, na #21; endereço e nome seguem na spec 002), foto/logo da barbearia, sair de uma barbearia ou excluir barbearia, remover gerente, transferir convite, regras de comissão (semana 2), horários livres e agendamento (semana 2), painel geral, avisos, diária, fechamento de agenda e remarcação (semanas 2–3, ADR-0019), retirar exclusividade e permitir diárias num vínculo exclusivo.
 
 ## Interface
 - O slogan "Passa a máquina na fila." aparece na tela de cadastro (`docs/design-system.md`).

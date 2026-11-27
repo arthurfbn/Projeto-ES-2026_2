@@ -1,6 +1,11 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
+    {
+      "source": "/api/:path*",
+      "has": [{ "type": "host", "value": "projeto-es-2026-2-.*\\.vercel\\.app" }],
+      "destination": "https://projeto-es-20262-develop-96aec1f9.up.railway.app/:path*"
+    },
     { "source": "/api/:path*", "destination": "https://projeto-es-20262-production.up.railway.app/:path*" },
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]

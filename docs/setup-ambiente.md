@@ -28,8 +28,8 @@ Tudo aqui é **gratuito** e não pede cartão de crédito (ADR-0015).
 2. Ative **Secret scanning** e **Push protection**.
 3. Ative **Dependabot alerts** e **Dependabot security updates**.
 
-### 2.3 Proteção da `main` (fazer depois que o CI existir)
-1. **Settings → Rules → Rulesets → New branch ruleset**, alvo `main`.
+### 2.3 Proteção da `main` e da `develop` — ✅ `main` concluída
+1. **Settings → Rules → Rulesets → New branch ruleset**, alvos `main` e `develop` (ADR-0020).
 2. Marque: **Require a pull request before merging**, **Require status checks to pass** (selecionar o job do CI quando existir), **Block force pushes**.
 3. Para o Ship/Show (ADR-0009), deixe "Required approvals" em **0**; a revisão do Ask é combinada entre vocês.
 
@@ -190,6 +190,28 @@ Variáveis `VITE_*` são públicas (vão para o navegador): nunca coloque segred
 4. Criem as issues da semana 1 (skill `spec-e-tickets`) e atribuam.
 
 ---
+
+## 11. Ambiente de homologação da `develop` [A+B] (ADR-0020)
+
+### GitHub
+1. A branch padrão **continua `main`** (produção). Ao abrir PR de fatia pelo site, troque a base para `develop`.
+2. Ruleset da seção 2.3 incluindo a `develop` (PR obrigatório + os dois checks do CI).
+
+### Railway
+1. No projeto `shavey`: **Environments → New Environment → Duplicate `production`**, nome `develop`. Isso cria **outro Postgres**, com dados separados.
+2. No ambiente `develop`, serviço da API: **Settings → Source → Branch** = `develop`.
+3. **Variables** (só deste ambiente): `DATABASE_URL = ${{Postgres.DATABASE_URL}}`, `NODE_ENV = production`, `SENTRY_DSN` (o mesmo da API) e `WEB_ORIGINS` = URL da Vercel da `develop` (item abaixo).
+4. **Settings → Networking → Generate Domain**: anote a URL `*.up.railway.app` da API da `develop`.
+5. O pre-deploy aplica as migrations (`railway.json`). Confira `/health` da nova URL.
+6. Dois ambientes consomem o trial em dobro: acompanhe **Usage**.
+
+### Vercel
+1. **Settings → Domains → Add**: um subdomínio gratuito para a `develop` (ex.: `shavey-develop.vercel.app`) e, em **Git Branch**, escolha `develop`.
+2. Passe as duas URLs (domínio da `develop` e API da `develop`) para atualizar o `apps/web/vercel.json`: a regra `has` por host manda esse domínio (e os previews) para a API da `develop`.
+3. **Settings → Git → Production Branch** continua `main`.
+
+### Produção (`main`)
+- No Railway, ambiente `production`, serviço da API: `WEB_ORIGINS` = URL de produção da Vercel.
 
 ## Pronto para começar quando
 - [ ] Bruno aceitou o convite do repositório

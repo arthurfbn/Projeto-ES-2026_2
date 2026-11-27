@@ -6,11 +6,12 @@
 
 > Agendamento e gestão de barbearias com transparência para quem corta cabelo. MVP desenvolvido na disciplina de Engenharia de Software (UNIFESP · ICT · 2026/2), pensado como base de um produto comercial: **site primeiro, app depois**.
 
-![status](https://img.shields.io/badge/status-em%20planejamento-yellow)
+![status](https://img.shields.io/badge/status-em%20desenvolvimento-blue)
 
 ## Sumário
 - [Problema](#problema)
 - [O que o MVP entrega](#o-que-o-mvp-entrega)
+- [Andamento](#andamento)
 - [Diferenciais](#diferenciais)
 - [Impacto social — ODS 8](#impacto-social--ods-8)
 - [Identidade visual](#identidade-visual)
@@ -40,6 +41,25 @@ Uma mesma conta pode atuar em três perfis, alternando entre visões:
 
 Cronograma: [`docs/plano-mvp.md`](docs/plano-mvp.md) — 3 semanas, apresentação em 07/12/2026.
 
+## Andamento
+Semana 1 (16–22/11): **contas e montagem da barbearia** ([spec 001](docs/specs/001-contas-e-montagem-da-barbearia.md), issues #6–#14).
+
+| Entrega | Situação |
+|---|---|
+| Documentação: CONTEXT, ADRs 0001–0020, design system, ODS 8, spec 001 | ✅ |
+| Monorepo, CI (lint, tipos, unidade, integração com Postgres, drift de migrations), Sentry | ✅ |
+| Walking skeleton em produção: web na Vercel ↔ API e Postgres no Railway | ✅ |
+| Cadastro, login e logout com sessão em cookie, tema claro/escuro (#6) | ✅ na `develop` |
+| Barbearia, serviços, `/me` com perfis, convites, vínculo, turno e disponibilidade (#7–#14) | 🚧 em andamento |
+| Semanas 2 e 3: agenda, pagamento, comissões, cancelamento, painéis | ⏳ |
+
+**Ambientes** ([ADR-0020](docs/adr/0020-branch-develop-e-ambiente-de-homologacao.md)):
+
+| Branch | Papel | Web | API + banco |
+|---|---|---|---|
+| `main` | produção (demo) | Vercel, domínio de produção | Railway, ambiente `production` |
+| `develop` | homologação (fatias validadas juntas) | Vercel, domínio da `develop` | Railway, ambiente `develop` |
+
 ## Diferenciais
 A agenda online, o lembrete e o controle de comissão já são comuns no mercado. O Shavey se diferencia por ser desenhado em torno do **barbeiro como trabalhador**, e não apenas do dono do estabelecimento:
 
@@ -66,6 +86,7 @@ A marca é uma **maquininha de cortar inclinada**, como na mão do barbeiro, com
 
 - **Tipografia:** Bricolage Grotesque 800 nos títulos, Inter 400/600 no texto.
 - **Forma:** cartões brancos sobre fundo papel, bordas `#E2D6C2`, cantos arredondados (12–28 px), sem gradientes.
+- **Tema claro e escuro:** escuro com fundo marinho, ação em latão e símbolo negativo, todos os pares com contraste AA.
 - **Voz:** direta e leve, com vocabulário de barbearia ("Máquina ligada, horário marcado"); sóbria quando o assunto é dinheiro.
 - **Acessibilidade:** latão nunca é cor de texto sobre fundo claro (contraste 2,3:1).
 
@@ -120,6 +141,7 @@ docs/
   CONTEXT.md           linguagem do domínio
   adr/                 decisões de arquitetura
   specs/               especificações de features
+  referencias/         modelo da disciplina de BD (só referência)
   plano-mvp.md         cronograma
 .claude/
   skills/              skills de desenvolvimento assistido por IA
@@ -140,7 +162,7 @@ pnpm dev                      # web em http://localhost:5173 e API em http://loc
 
 > **Windows:** se a API não subir com `pnpm dev` (a web abre, mas o status fica sem resposta), rode em dois terminais: `pnpm dev:api` e `pnpm dev:web`.
 
-A página inicial mostra o **status do sistema**: se aparecer "Máquina ligada: servidor e banco no ar.", web, API e banco estão conversando.
+A página inicial mostra o **status do sistema**: se aparecer "Máquina ligada: servidor e banco no ar.", web, API e banco estão conversando. Dali dá para criar conta (`/cadastro`) e entrar (`/entrar`).
 
 | Comando | O que faz |
 |---|---|
@@ -159,7 +181,7 @@ Fluxo baseado no conteúdo da disciplina e apoiado por IA:
 ```
 Ideia → Grill (discovery) → CONTEXT.md + ADR → Spec → Issues em fatias verticais → TDD → PR → CI → Deploy → Métricas
 ```
-- **Git:** trunk-based, branches curtas, Conventional Commits, PRs Ship/Show/Ask ([ADR-0009](docs/adr/0009-fluxo-git-e-ci.md)).
+- **Git:** branches curtas saindo da `develop` (homologação) e voltando por PR; a `main` (produção) recebe só a `develop` validada. Conventional Commits, PRs Ship/Show/Ask ([ADR-0009](docs/adr/0009-fluxo-git-e-ci.md), [ADR-0020](docs/adr/0020-branch-develop-e-ambiente-de-homologacao.md)).
 - **CI:** lint, typecheck, testes de unidade e integração e checagem de migrations em todo PR.
 - **Testes:** pirâmide com foco no núcleo de regras ([ADR-0008](docs/adr/0008-estrategia-de-testes.md)).
 - **Métricas:** DORA (frequência de deploy, lead time, taxa de falha, tempo de recuperação) e SLO de criação de agendamento.
@@ -172,6 +194,7 @@ Ideia → Grill (discovery) → CONTEXT.md + ADR → Spec → Issues em fatias v
 - [Design system](docs/design-system.md)
 - [Setup do ambiente](docs/setup-ambiente.md)
 - [Plano do MVP](docs/plano-mvp.md)
+- [Specs](docs/specs/) e [referências da disciplina de BD](docs/referencias/)
 
 ## Equipe
 | Pessoa | Atuação |

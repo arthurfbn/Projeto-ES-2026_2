@@ -1,4 +1,7 @@
 import { buildApp } from './app'
+import { createBarbershopProfilesQuery, createBarbershopsModule } from './modules/barbearias'
+import { createIdentityModule, createUserDirectory } from './modules/identidade'
+import { systemClock } from './shared/clock'
 import { loadConfig } from './shared/config'
 import { createDb } from './shared/db/prisma'
 import { createPrismaDatabaseProbe } from './shared/db/prisma-database-probe'
@@ -32,11 +35,23 @@ if (config.sentryDsn) {
   })
 }
 
+const identity = createIdentityModule({ db, clock: systemClock, profiles: createBarbershopProfilesQuery(db) })
+
 const app = await buildApp({
   probe: createPrismaDatabaseProbe(db),
   errorReporter,
   version: config.version,
   logger,
+  allowedOrigins: config.webOrigins,
+  modules: [
+    identity,
+    createBarbershopsModule({
+      db,
+      clock: systemClock,
+      requireUser: identity.requireUser,
+      users: createUserDirectory(db),
+    }),
+  ],
 })
 
 async function shutdown(signal: string) {

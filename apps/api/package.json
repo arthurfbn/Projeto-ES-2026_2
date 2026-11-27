@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/server.ts",
+    "dev": "node --watch --import tsx src/server.ts",
     "build": "prisma generate && tsup",
     "start": "node --enable-source-maps dist/server.js",
     "typecheck": "prisma generate && tsc --noEmit",
@@ -16,7 +16,10 @@
     "db:studio": "prisma studio"
   },
   "dependencies": {
+    "@fastify/cookie": "^11.1.5",
     "@fastify/helmet": "^13.2.0",
+    "@fastify/rate-limit": "^11.3.0",
+    "@node-rs/argon2": "^2.2.2",
     "@prisma/adapter-pg": "7.10.1",
     "@prisma/client": "7.10.1",
     "@sentry/node": "^11.14.0",

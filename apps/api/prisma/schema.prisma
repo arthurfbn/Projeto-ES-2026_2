@@ -9,3 +9,227 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+// ─── Identidade (spec 001, R1–R4; ADR-0006, ADR-0011) ───────────────────────
+
+/// Usuário: conta única; perfis por barbearia ficam em outras tabelas (sem papel global).
+model User {
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name         String
+  /// Sempre em minúsculas (CHECK no banco): unicidade sem diferenciar caixa.
+  email        String    @unique
+  /// Só dígitos, DDD + 8 ou 9 (CHECK no banco). Pode repetir entre usuários.
+  phone        String
+  passwordHash String    @map("password_hash")
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+  sessions     Session[]
+
+  managedBarbershops  BarbershopManager[]
+  barberMemberships   BarberMembership[]  @relation("MembershipBarber")
+  approvedMemberships BarberMembership[]  @relation("MembershipApprover")
+  receivedInvitations Invitation[]        @relation("InvitationInvitee")
+  sentInvitations     Invitation[]        @relation("InvitationInviter")
+
+  @@map("users")
+}
+
+/// Sessão opaca: o cookie guarda o token; o banco guarda só o hash SHA-256 dele.
+model Session {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tokenHash String   @unique @map("token_hash")
+  userId    String   @map("user_id") @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime @map("expires_at") @db.Timestamptz
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+// ─── Barbearias (spec 001, R7–R8; ADR-0011, ADR-0018) ───────────────────────
+
+/// Barbearia: nome e endereço estruturado (CEP e UF validados no contrato e por CHECK no banco).
+model Barbershop {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name         String
+  /// Só os 8 dígitos.
+  cep          String
+  street       String
+  number       String
+  complement   String?
+  neighborhood String
+  city         String
+  /// Sigla da UF, em maiúsculas.
+  state        String   @db.Char(2)
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  managers    BarbershopManager[]
+  memberships BarberMembership[]
+  services    Service[]
+  invitations Invitation[]
+
+  @@map("barbershops")
+}
+
+/// Gerência: o usuário é gerente desta barbearia. Uma barbearia pode ter vários gerentes.
+model BarbershopManager {
+  id           String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  barbershopId String     @map("barbershop_id") @db.Uuid
+  barbershop   Barbershop @relation(fields: [barbershopId], references: [id], onDelete: Restrict)
+  userId       String     @map("user_id") @db.Uuid
+  user         User       @relation(fields: [userId], references: [id], onDelete: Restrict)
+  createdAt    DateTime   @default(now()) @map("created_at") @db.Timestamptz
+
+  @@unique([barbershopId, userId])
+  @@index([userId])
+  @@map("barbershop_managers")
+}
+
+/// Vínculo (BarberMembership): relação formal entre barbeiro e barbearia (ODS 8, meta 8.3).
+model BarberMembership {
+  id                  String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  barbershopId        String         @map("barbershop_id") @db.Uuid
+  barbershop          Barbershop     @relation(fields: [barbershopId], references: [id], onDelete: Restrict)
+  userId              String         @map("user_id") @db.Uuid
+  user                User           @relation("MembershipBarber", fields: [userId], references: [id], onDelete: Restrict)
+  /// Data de contratação: criação da barbearia ("eu também atendo") ou aceite do convite.
+  hiredAt             DateTime       @map("hired_at") @db.Timestamptz
+  approvedByUserId    String         @map("approved_by_user_id") @db.Uuid
+  approvedBy          User           @relation("MembershipApprover", fields: [approvedByUserId], references: [id], onDelete: Restrict)
+  isExclusive         Boolean        @map("is_exclusive")
+  acceptsAppointments Boolean        @map("accepts_appointments")
+  isActive            Boolean        @map("is_active")
+  createdAt           DateTime       @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt           DateTime       @updatedAt @map("updated_at") @db.Timestamptz
+  allowedShifts       AllowedShift[]
+
+  barberServices BarberService[]
+  availabilities BarberAvailability[]
+
+  @@unique([barbershopId, userId])
+  @@unique([id, barbershopId])
+  @@unique([id, barbershopId, userId])
+  @@index([userId])
+  @@map("barber_memberships")
+}
+
+/// Serviço (spec 001, R9): preço e duração padrão definidos pelo gerente. Nunca é excluído, só desativado.
+model Service {
+  id              String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  barbershopId    String     @map("barbershop_id") @db.Uuid
+  barbershop      Barbershop @relation(fields: [barbershopId], references: [id], onDelete: Restrict)
+  name            String
+  priceCents      Int        @map("price_cents")
+  durationMinutes Int        @map("duration_minutes")
+  isActive        Boolean    @default(true) @map("is_active")
+  createdAt       DateTime   @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime   @updatedAt @map("updated_at") @db.Timestamptz
+
+  barberServices BarberService[]
+
+  @@unique([id, barbershopId])
+  @@index([barbershopId])
+  @@map("services")
+}
+
+// ─── Convites (spec 001, R10–R14; ADR-0018) ─────────────────────────────────
+
+enum InvitationKind {
+  barber
+  manager
+
+  @@map("invitation_kind")
+}
+
+/// Expirado é decidido no momento de agir (expires_at), sem job (ADR-0018).
+enum InvitationStatus {
+  pending
+  accepted
+  declined
+  canceled
+  expired
+
+  @@map("invitation_status")
+}
+
+/// Convite: gerente propõe a um usuário já cadastrado entrar como barbeiro (vínculo) ou gerente.
+model Invitation {
+  id              String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  barbershopId    String           @map("barbershop_id") @db.Uuid
+  barbershop      Barbershop       @relation(fields: [barbershopId], references: [id], onDelete: Restrict)
+  inviteeUserId   String           @map("invitee_user_id") @db.Uuid
+  invitee         User             @relation("InvitationInvitee", fields: [inviteeUserId], references: [id], onDelete: Restrict)
+  invitedByUserId String           @map("invited_by_user_id") @db.Uuid
+  invitedBy       User             @relation("InvitationInviter", fields: [invitedByUserId], references: [id], onDelete: Restrict)
+  kind            InvitationKind
+  /// Exclusividade proposta (só convite de barbeiro; CHECK no banco).
+  isExclusive     Boolean          @map("is_exclusive")
+  status          InvitationStatus @default(pending)
+  expiresAt       DateTime         @map("expires_at") @db.Timestamptz
+  respondedAt     DateTime?        @map("responded_at") @db.Timestamptz
+  createdAt       DateTime         @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime         @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@index([barbershopId, status])
+  @@index([inviteeUserId, status])
+  @@map("invitations")
+}
+
+/// Turno permitido (R15; ADR-0019): janela semanal opcional do vínculo. Sem linhas = sem turno.
+/// Dia 0 = domingo … 6 = sábado; minutos do dia em hora de São Paulo, de 15 em 15.
+/// Sem sobreposição no mesmo dia: constraint EXCLUDE na migration.
+model AllowedShift {
+  id           String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  membershipId String           @map("membership_id") @db.Uuid
+  membership   BarberMembership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  weekday      Int              @db.SmallInt
+  startMinute  Int              @map("start_minute") @db.SmallInt
+  endMinute    Int              @map("end_minute") @db.SmallInt
+
+  @@index([membershipId])
+  @@map("allowed_shifts")
+}
+
+/// Serviço do barbeiro (R16): o barbeiro realiza o serviço na barbearia, com preço e duração
+/// próprios opcionais (null = padrão do serviço). Chaves compostas com barbershop_id garantem no
+/// banco que vínculo e serviço são da mesma barbearia.
+model BarberService {
+  id              String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  barbershopId    String           @map("barbershop_id") @db.Uuid
+  membershipId    String           @map("membership_id") @db.Uuid
+  membership      BarberMembership @relation(fields: [membershipId, barbershopId], references: [id, barbershopId], onDelete: Cascade)
+  serviceId       String           @map("service_id") @db.Uuid
+  service         Service          @relation(fields: [serviceId, barbershopId], references: [id, barbershopId], onDelete: Restrict)
+  priceCents      Int?             @map("price_cents")
+  durationMinutes Int?             @map("duration_minutes")
+  createdAt       DateTime         @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime         @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@unique([membershipId, serviceId])
+  @@index([serviceId])
+  @@map("barber_services")
+}
+
+/// Disponibilidade (R17–R20): janela semanal em que o barbeiro atende numa barbearia, com vigência
+/// em datas de São Paulo (inclusivas; sem fim = em diante). Dia 0 = domingo … 6 = sábado; minutos
+/// do dia de 15 em 15. A chave composta garante vínculo, barbearia e barbeiro coerentes; a constraint
+/// EXCLUDE (migration) impede sobreposição do mesmo barbeiro em qualquer barbearia (R20).
+model BarberAvailability {
+  id           String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  barbershopId String           @map("barbershop_id") @db.Uuid
+  userId       String           @map("user_id") @db.Uuid
+  membershipId String           @map("membership_id") @db.Uuid
+  membership   BarberMembership @relation(fields: [membershipId, barbershopId, userId], references: [id, barbershopId, userId], onDelete: Cascade)
+  weekday      Int              @db.SmallInt
+  startMinute  Int              @map("start_minute") @db.SmallInt
+  endMinute    Int              @map("end_minute") @db.SmallInt
+  validFrom    DateTime         @map("valid_from") @db.Date
+  validUntil   DateTime?        @map("valid_until") @db.Date
+  createdAt    DateTime         @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([membershipId])
+  @@index([userId, weekday])
+  @@map("barber_availabilities")
+}
