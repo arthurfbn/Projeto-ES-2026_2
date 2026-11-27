@@ -22,3 +22,26 @@ export function formatIsoDate(date: string): string {
   const [year, month, day] = date.split('-')
   return `${day}/${month}/${year}`
 }
+
+const time = new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' })
+
+/** Hora no fuso de São Paulo (ex.: "10:00"), a partir de um instante ISO em UTC. */
+export function formatTime(iso: string): string {
+  return time.format(new Date(iso))
+}
+
+const weekdayShort = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb']
+
+/**
+ * Os próximos `count` dias do calendário a partir de `start` (AAAA-MM-DD), com rótulo curto
+ * ("seg 30/11"). Datas de calendário: a conta é feita em UTC, sem fuso a converter.
+ */
+export function nextDays(start: string, count: number): { date: string; label: string }[] {
+  const first = new Date(`${start}T12:00:00Z`)
+  return Array.from({ length: count }, (_, i) => {
+    const day = new Date(first.getTime() + i * 24 * 60 * 60 * 1000)
+    const date = day.toISOString().slice(0, 10)
+    const [, month, dayOfMonth] = date.split('-')
+    return { date, label: `${weekdayShort[day.getUTCDay()]} ${dayOfMonth}/${month}` }
+  })
+}

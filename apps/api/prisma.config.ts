@@ -9,7 +9,8 @@ try {
 
 export default defineConfig({
   schema: 'prisma/schema.prisma',
-  migrations: { path: 'prisma/migrations' },
+  // Seed da demo: senha das contas em SEED_DEMO_PASSWORD (nunca no código).
+  migrations: { path: 'prisma/migrations', seed: 'tsx prisma/seed.ts' },
   datasource: {
     url: process.env.DATABASE_URL ?? '',
   },

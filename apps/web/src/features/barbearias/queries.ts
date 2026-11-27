@@ -1,6 +1,8 @@
 import { computed, toValue, type MaybeRefOrGetter } from 'vue'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
 import type {
+  BarbershopSearchQuery,
+  CreateAppointmentRequest,
   CreateAvailabilityRequest,
   CreateBarbershopRequest,
   CreateInvitationRequest,
@@ -22,7 +24,12 @@ import {
   fetchBarberServices,
   declineInvitation,
   fetchBarbershop,
+  fetchBarbershopPage,
   fetchMemberships,
+  createAppointment,
+  fetchPlatformServices,
+  fetchSlots,
+  searchBarbershops,
   fetchOwnMembership,
   fetchReceivedInvitations,
   fetchSentInvitations,
@@ -43,6 +50,52 @@ export function useBarbershop(barbershopId: MaybeRefOrGetter<string>) {
   return useQuery({
     queryKey: computed(() => barbershopQueryKey(toValue(barbershopId))),
     queryFn: ({ signal }) => fetchBarbershop(toValue(barbershopId), signal),
+    retry: (failureCount, error) => !(error instanceof ApiError && error.status === 404) && failureCount < 2,
+  })
+}
+
+/** R1, R2: busca só vai à API com texto ou chip escolhido. */
+export function useBarbershopSearch(query: MaybeRefOrGetter<BarbershopSearchQuery>) {
+  return useQuery({
+    queryKey: computed(() => ['barbershop-search', toValue(query)] as const),
+    queryFn: ({ signal }) => searchBarbershops(toValue(query), signal),
+    enabled: computed(() => Boolean(toValue(query).q || toValue(query).service)),
+  })
+}
+
+export function usePlatformServices() {
+  return useQuery({ queryKey: ['platform-services'], queryFn: ({ signal }) => fetchPlatformServices(signal) })
+}
+
+/** R5–R8: horários livres; só busca com serviço e dia escolhidos. */
+export function useSlots(
+  input: MaybeRefOrGetter<{ barbershopId: string; serviceId: string; date: string; membershipId?: string } | null>,
+) {
+  return useQuery({
+    queryKey: computed(() => ['slots', toValue(input)] as const),
+    queryFn: ({ signal }) => {
+      const value = toValue(input)
+      if (!value) throw new Error('sem serviço e dia')
+      return fetchSlots(value, signal)
+    },
+    enabled: computed(() => toValue(input) !== null),
+  })
+}
+
+/** R9–R11: ao agendar (ou perder o horário para outro cliente), os horários livres mudam. */
+export function useCreateAppointment(barbershopId: MaybeRefOrGetter<string>) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (input: CreateAppointmentRequest) => createAppointment(toValue(barbershopId), input),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ['slots'] }),
+  })
+}
+
+/** R3: página da barbearia. 404 não é tentado de novo. */
+export function useBarbershopPage(barbershopId: MaybeRefOrGetter<string>) {
+  return useQuery({
+    queryKey: computed(() => ['barbershop-page', toValue(barbershopId)] as const),
+    queryFn: ({ signal }) => fetchBarbershopPage(toValue(barbershopId), signal),
     retry: (failureCount, error) => !(error instanceof ApiError && error.status === 404) && failureCount < 2,
   })
 }

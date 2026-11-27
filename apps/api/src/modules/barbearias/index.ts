@@ -10,6 +10,8 @@ import { createPrismaBarbershopRepository } from './adapters/prisma-barbershop-r
 import { createPrismaMembershipRepository } from './adapters/prisma-membership-repository'
 import { createPrismaServiceRepository } from './adapters/prisma-service-repository'
 import { createPrismaInvitationRepository } from './adapters/prisma-invitation-repository'
+import { createPrismaDiscoveryQuery } from './adapters/prisma-discovery-query'
+import { registerDiscoveryRoutes } from './http/discovery-routes'
 import type { AvailabilityReader, BarbershopPorts, UserDirectory } from './app/ports'
 import { registerAvailabilityRoutes } from './http/availability-routes'
 import { registerBarberServiceRoutes } from './http/barber-service-routes'
@@ -31,6 +33,9 @@ export type { AvailabilityReader, UserDirectory } from './app/ports'
  */
 export { createPrismaBarbershopProfilesQuery as createBarbershopProfilesQuery } from './adapters/prisma-barbershop-profiles-query'
 
+/** Serviço, barbeiros que o realizam e disponibilidade, para os horários livres do módulo agenda. */
+export { createPrismaBookingCatalog as createBookingCatalog } from './adapters/prisma-booking-catalog'
+
 export type BarbershopsModuleOptions = {
   db: Db
   clock: Clock
@@ -44,6 +49,7 @@ export type BarbershopsModuleOptions = {
 
 export function createBarbershopsModule(options: BarbershopsModuleOptions) {
   const ports: BarbershopPorts = {
+    discovery: createPrismaDiscoveryQuery(options.db),
     barbershops: createPrismaBarbershopRepository(options.db),
     services: createPrismaServiceRepository(options.db),
     invitations: createPrismaInvitationRepository(options.db),
@@ -58,6 +64,7 @@ export function createBarbershopsModule(options: BarbershopsModuleOptions) {
   return {
     register(app: FastifyInstance) {
       registerBarbershopRoutes(app, ports, options.requireUser)
+      registerDiscoveryRoutes(app, ports, options.requireUser)
       registerServiceRoutes(app, ports, options.requireUser)
       registerInvitationRoutes(app, ports, options.requireUser)
       registerMembershipRoutes(app, ports, options.requireUser)

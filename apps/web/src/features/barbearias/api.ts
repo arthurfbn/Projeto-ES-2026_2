@@ -1,11 +1,19 @@
 import {
   acceptInvitationResponseSchema,
+  appointmentResponseSchema,
+  slotsResponseSchema,
+  type AppointmentResponse,
+  type CreateAppointmentRequest,
+  type SlotsResponse,
   availabilityListResponseSchema,
   availabilityResponseSchema,
   barberServiceListResponseSchema,
   barberServiceResponseSchema,
+  barbershopPageResponseSchema,
   barbershopResponseSchema,
+  barbershopSearchResponseSchema,
   membershipListResponseSchema,
+  platformServicesResponseSchema,
   membershipResponseSchema,
   ownMembershipResponseSchema,
   receivedInvitationListResponseSchema,
@@ -16,7 +24,11 @@ import {
   type AcceptInvitationResponse,
   type Availability,
   type BarberService,
+  type BarbershopPageResponse,
   type BarbershopResponse,
+  type BarbershopSearchQuery,
+  type BarbershopSearchResult,
+  type PlatformService,
   type CreateAvailabilityRequest,
   type CreateBarbershopRequest,
   type CreateInvitationRequest,
@@ -43,7 +55,44 @@ export function fetchBarbershop(barbershopId: string, signal?: AbortSignal): Pro
   return apiGet(`/barbershops/${encodeURIComponent(barbershopId)}`, barbershopResponseSchema, { signal })
 }
 
-const servicesPath = (barbershopId: string) => `/barbershops/${encodeURIComponent(barbershopId)}/services`
+/** R1, R2: barbearias agendáveis pelo texto e/ou pelo chip de serviço. */
+export async function searchBarbershops(
+  query: BarbershopSearchQuery,
+  signal?: AbortSignal,
+): Promise<BarbershopSearchResult[]> {
+  const params = new URLSearchParams()
+  if (query.q) params.set('q', query.q)
+  if (query.service) params.set('service', query.service)
+  return (await apiGet(`/barbershops/search?${params}`, barbershopSearchResponseSchema, { signal })).barbershops
+}
+
+/** R2: chips dos serviços da plataforma. */
+export async function fetchPlatformServices(signal?: AbortSignal): Promise<PlatformService[]> {
+  return (await apiGet('/platform-services', platformServicesResponseSchema, { signal })).services
+}
+
+/** R5–R8: horários livres do serviço num dia; sem `membershipId` = "qualquer barbeiro". */
+export function fetchSlots(
+  input: { barbershopId: string; serviceId: string; date: string; membershipId?: string },
+  signal?: AbortSignal,
+): Promise<SlotsResponse> {
+  const params = new URLSearchParams({ date: input.date })
+  if (input.membershipId) params.set('membershipId', input.membershipId)
+  const path = `/barbershops/${encodeURIComponent(input.barbershopId)}/services/${encodeURIComponent(input.serviceId)}/slots`
+  return apiGet(`${path}?${params}`, slotsResponseSchema, { signal })
+}
+
+/** R9–R11: agenda pagando no local. */
+export function createAppointment(barbershopId: string, input: CreateAppointmentRequest): Promise<AppointmentResponse> {
+  return apiPost(`/barbershops/${encodeURIComponent(barbershopId)}/appointments`, input, appointmentResponseSchema)
+}
+
+/** R3: página da barbearia, a visão do cliente (diferente da Gestão). */
+export function fetchBarbershopPage(barbershopId: string, signal?: AbortSignal): Promise<BarbershopPageResponse> {
+  return apiGet(`/barbershops/${encodeURIComponent(barbershopId)}/page`, barbershopPageResponseSchema, { signal })
+}
+
+const servicesPath =(barbershopId: string) => `/barbershops/${encodeURIComponent(barbershopId)}/services`
 
 export async function fetchServices(barbershopId: string, signal?: AbortSignal): Promise<Service[]> {
   return (await apiGet(servicesPath(barbershopId), serviceListResponseSchema, { signal })).services
