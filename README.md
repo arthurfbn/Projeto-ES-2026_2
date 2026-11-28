@@ -182,6 +182,7 @@ Fluxo baseado no conteúdo da disciplina e apoiado por IA:
 Ideia → Grill (discovery) → CONTEXT.md + ADR → Spec → Issues em fatias verticais → TDD → PR → CI → Deploy → Métricas
 ```
 - **Git:** branches curtas saindo da `develop` (homologação) e voltando por PR; a `main` (produção) recebe só a `develop` validada. Conventional Commits, PRs Ship/Show/Ask ([ADR-0009](docs/adr/0009-fluxo-git-e-ci.md), [ADR-0020](docs/adr/0020-branch-develop-e-ambiente-de-homologacao.md)).
+- **Versões:** cada release na `main` vira tag e [GitHub Release](https://github.com/arthurfbn/Projeto-ES-2026_2/releases) em Semantic Versioning, `0.x` até a apresentação ([ADR-0024](docs/adr/0024-versionamento-semantico-e-releases.md)).
 - **CI:** lint, typecheck, testes de unidade e integração e checagem de migrations em todo PR.
 - **Testes:** pirâmide com foco no núcleo de regras ([ADR-0008](docs/adr/0008-estrategia-de-testes.md)).
 - **Métricas:** DORA (frequência de deploy, lead time, taxa de falha, tempo de recuperação) e SLO de criação de agendamento.
