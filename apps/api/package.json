@@ -22,7 +22,7 @@
     "@node-rs/argon2": "^2.2.2",
     "@prisma/adapter-pg": "7.10.1",
     "@prisma/client": "7.10.1",
-    "@sentry/node": "^11.14.0",
+    "@sentry/node": "^11.17.0",
     "@shavey/contracts": "workspace:*",
     "fastify": "^5.12.8",
     "prisma": "7.10.1",
