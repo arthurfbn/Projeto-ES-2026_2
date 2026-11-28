@@ -10,7 +10,8 @@ description: Use ao criar branch, fazer commit, abrir ou revisar pull request �
 - A partir da `develop` atualizada: `git switch -c <tipo>/<issue>-<descricao-curta>` (ex.: `feat/12-agendar-horario`). PR sempre para a `develop`.
 - Correção urgente em produção: `fix/...` a partir da `main`, PR para a `main`, depois `main` mergeada de volta na `develop`.
 - Vida máxima de 1–2 dias. Se crescer, fatie (feature flag por variável de ambiente se precisar entrar incompleta).
-- Antes de abrir PR: `git fetch && git rebase origin/develop`.
+- Antes de abrir PR: `git fetch && git merge origin/develop` e resolva os conflitos localmente. Use merge, não rebase, para não precisar de force-push numa branch já enviada.
+- Branch que depende de outra ainda não mesclada: pode sair dela (os commits são preservados pelo merge commit). Abra o PR com base na branch-mãe e, depois que ela entrar, `git merge origin/develop` e `gh pr edit <n> --base develop`.
 
 ## Commits
 - Conventional Commits, em português, imperativo: `feat(agenda): recusa agendamento sobreposto`.
@@ -38,6 +39,13 @@ Ordem: (1) atende os critérios de aceite? (2) authz por barbearia (skill `segur
 Comentários com prefixo `bloqueante:`, `sugestão:` ou `dúvida:`.
 
 ## Merge
-Fatia → `develop`: squash merge com título Conventional Commit; apagar a branch.
-Release `develop` → `main`: PR com merge commit (não squash), CI verde e conferência no ambiente da `develop`; no mínimo antes de cada demo. A `main` é a branch padrão: issues com `Closes #n` fecham na release.
+Fatia → `develop`: **merge commit** ("Create a merge commit", não squash nem rebase), preservando os commits da branch.
+Release `develop` → `main`: PR com merge commit, CI verde e conferência no ambiente da `develop`; no mínimo antes de cada demo. A `main` é a branch padrão: issues com `Closes #n` fecham na release.
 `develop` ou `main` quebrada = prioridade zero: reverter primeiro, investigar depois.
+
+## Versão e release (ADR-0024)
+- Semantic Versioning com tag `vX.Y.Z` e GitHub Release no commit de merge da release na `main`. A tag é a fonte da verdade; `package.json` fica em `0.0.0`.
+- Em `0.x`: release com funcionalidade nova sobe **MINOR**; só correções (inclusive `fix/...` na `main`) sobe **PATCH**. `1.0.0` = versão da apresentação (07/12).
+- Título do PR de release: `release: vX.Y.Z — <resumo>`. Logo após o merge, quem mesclou cria a release:
+  `gh release list` (última versão) → `gh release create vX.Y.Z --target <sha do merge> --title "vX.Y.Z — <resumo>" --notes-file <notas.md> --latest`.
+- Notas em português, agrupadas por assunto, citando os PRs. Acrescente a linha da versão na tabela do ADR-0024.

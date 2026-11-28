@@ -1,5 +1,6 @@
 import { buildApp } from './app'
-import { createBarbershopProfilesQuery, createBarbershopsModule } from './modules/barbearias'
+import { createAgendaModule } from './modules/agenda'
+import { createBarbershopProfilesQuery, createBarbershopsModule, createBookingCatalog } from './modules/barbearias'
 import { createIdentityModule, createUserDirectory } from './modules/identidade'
 import { systemClock } from './shared/clock'
 import { loadConfig } from './shared/config'
@@ -36,6 +37,7 @@ if (config.sentryDsn) {
 }
 
 const identity = createIdentityModule({ db, clock: systemClock, profiles: createBarbershopProfilesQuery(db) })
+const users = createUserDirectory(db)
 
 const app = await buildApp({
   probe: createPrismaDatabaseProbe(db),
@@ -49,7 +51,13 @@ const app = await buildApp({
       db,
       clock: systemClock,
       requireUser: identity.requireUser,
-      users: createUserDirectory(db),
+      users,
+    }),
+    createAgendaModule({
+      clock: systemClock,
+      requireUser: identity.requireUser,
+      catalog: createBookingCatalog(db),
+      users,
     }),
   ],
 })

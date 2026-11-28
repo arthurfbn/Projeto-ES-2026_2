@@ -33,6 +33,9 @@ export type { AvailabilityReader, UserDirectory } from './app/ports'
  */
 export { createPrismaBarbershopProfilesQuery as createBarbershopProfilesQuery } from './adapters/prisma-barbershop-profiles-query'
 
+/** Serviço, barbeiros que o realizam e disponibilidade, para os horários livres do módulo agenda. */
+export { createPrismaBookingCatalog as createBookingCatalog } from './adapters/prisma-booking-catalog'
+
 export type BarbershopsModuleOptions = {
   db: Db
   clock: Clock

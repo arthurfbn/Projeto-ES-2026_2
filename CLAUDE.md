@@ -17,7 +17,7 @@ Shavey: sistema de agendamento e gestão de barbearias. MVP de um produto comerc
 1. Feature nova ou regra ambígua → skill `grill-barbearia` (atualiza `docs/CONTEXT.md` e `docs/adr/`).
 2. Entendimento fechado → skill `spec-e-tickets` (issues no GitHub em fatias verticais).
 3. Implementação → skill `tdd-core` no núcleo de domínio; demais regras nas skills `banco-migrations`, `seguranca-authz`, `pagamentos-stripe`, `frontend-vue`.
-4. Entrega → skill `git-pr` (commit, PR para a `develop`, checagens). A `main` é produção e só recebe a `develop` validada (ADR-0020).
+4. Entrega → skill `git-pr` (commit, PR para a `develop`, checagens). A `main` é produção e só recebe a `develop` validada (ADR-0020); cada release na `main` ganha tag e GitHub Release em Semantic Versioning (ADR-0024).
 Nunca pule do pedido vago direto para código.
 
 ## Marca
