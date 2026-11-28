@@ -4,6 +4,7 @@ import type { Clock } from '../../../shared/clock'
 import type { WeeklyWindow } from '../core/allowed-shift'
 import type { ExistingAvailability, NewAvailability } from '../core/availability'
 import type { BarbershopCreationPlan } from '../core/barbershop-creation'
+import type { BookableBarbershop, PageService } from '../core/discovery'
 import type {
   InvitationAcceptancePlan,
   InvitationClosing,
@@ -203,7 +204,21 @@ export interface AvailabilityRepository {
   remove(membershipId: string, availabilityId: string): Promise<boolean>
 }
 
+/** Serviço da página com o usuário de cada barbeiro (o nome vem do `UserDirectory`). */
+export type PageServiceRecord = Omit<PageService, 'barbers'> & {
+  barbers: (Omit<PageService['barbers'][number], 'name'> & { userId: string })[]
+}
+
+/** Descoberta (spec 003, R1–R3): leitura para a busca, os chips e a página da barbearia. */
+export interface DiscoveryQuery {
+  /** Barbearias agendáveis com os nomes dos serviços agendáveis de cada uma. */
+  listBookable(): Promise<BookableBarbershop[]>
+  /** Todos os serviços da barbearia com os barbeiros que os realizam (o core filtra). */
+  pageServices(barbershopId: string): Promise<PageServiceRecord[]>
+}
+
 export type BarbershopPorts = {
+  discovery: DiscoveryQuery
   barbershops: BarbershopRepository
   services: ServiceRepository
   invitations: InvitationRepository

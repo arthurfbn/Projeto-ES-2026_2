@@ -17,7 +17,8 @@
     "test": "pnpm -r test",
     "test:int": "pnpm --filter @shavey/api test:int",
     "db:migrate": "pnpm --filter @shavey/api db:migrate",
-    "db:deploy": "pnpm --filter @shavey/api db:deploy"
+    "db:deploy": "pnpm --filter @shavey/api db:deploy",
+    "db:seed": "pnpm --filter @shavey/api db:seed"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

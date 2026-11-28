@@ -2,13 +2,15 @@
 import { computed } from 'vue'
 import AppShell from '@/components/AppShell.vue'
 import CardCarousel, { type CarouselCard } from '@/components/CardCarousel.vue'
+import BarbershopSearch from '@/features/barbearias/components/BarbershopSearch.vue'
 import ReceivedInvitations from '@/features/barbearias/components/ReceivedInvitations.vue'
 import { useMe } from '@/features/conta/queries'
 import HealthStatus from '@/features/sistema/HealthStatus.vue'
 
 /**
- * Início (ADR-0022): o mesmo feed para todo mundo, sem troca de visão. Mostra só o que existe
- * para a pessoa: convites, barbearias que ela gerencia e seus vínculos de barbeiro.
+ * Início (ADR-0022): o mesmo feed para todo mundo, sem troca de visão. Mostra a busca com os
+ * serviços da plataforma e o que existe para a pessoa: convites, barbearias que ela gerencia e
+ * seus vínculos de barbeiro.
  */
 const { data: me, isPending, isError, refetch } = useMe()
 
@@ -57,6 +59,7 @@ const memberships = computed<CarouselCard[]>(() =>
       <h1 class="font-display text-[2rem] font-extrabold leading-tight tracking-[-0.02em]">
         Olá, {{ me.user.name }}
       </h1>
+      <BarbershopSearch />
       <ReceivedInvitations />
       <CardCarousel
         title="Minhas barbearias"
